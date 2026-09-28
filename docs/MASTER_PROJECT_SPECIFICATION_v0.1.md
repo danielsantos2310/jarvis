@@ -1,5 +1,7 @@
 # JARVIS MASTER PROJECT SPECIFICATION v0.1
 
+**Historical M0 design baseline.** Current progress (2026-09-28): the documentation PR is merged and Daniel requested the next step. The first M1 evaluation slice is described in [Milestone 1](milestones/001-local-alpha.md) and [ADR-0007](adr/0007-m1-local-alpha.md); its choices do not imply owner sign-off on every proposal below.
+
 | Field | Value |
 | --- | --- |
 | Version | 0.1 |

@@ -1,5 +1,13 @@
 # Changelog
 
+## Local alpha 0.2.0-alpha.1 — 2026-09-28
+
+- Added the first M1 slice: Fastify/TypeScript core, React/Vite dashboard and SQLite persistence.
+- Added terminal enrollment, password login/recovery, session/CSRF/origin controls, scoped local actions and redacted audit metadata.
+- Added tasks, one-shot reminders, durable timers, private due inbox and synthetic presence.
+- Added Windows setup, implementation ADR, automated API/browser tests and a limited-scope evidence report.
+- Full M1 acceptance, Windows evidence, recurring reminders and personal backup/restore remain pending.
+
 ## Specification v0.1 — 2026-09-16
 
 - Prepared the JARVIS master project specification and Milestone 0 documentation.

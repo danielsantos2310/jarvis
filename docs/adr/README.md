@@ -18,3 +18,7 @@ Create an ADR for changes to trust boundaries, persistence, major dependencies, 
 | [0006](0006-pc-to-home-hub.md) | One-PC pilot to single home hub with thin room endpoints | Proposed |
 
 Future ADRs should cover cloud provider selection, native desktop capabilities, executable plugin isolation, database migration and any P3 external-write feature. These are not implicitly approved by the initial records.
+
+## Implementation follow-up
+
+[ADR-0007: first local PC alpha](0007-m1-local-alpha.md) records selected implementation choices and their limits. Implemented for evaluation; owner acceptance pending. Earlier proposed ADRs are not silently marked accepted.

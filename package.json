@@ -1,0 +1,38 @@
+{
+  "name": "jarvis-local-alpha",
+  "version": "0.2.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.19.0 <25"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "start": "node --disable-sigusr1 --disable-proto=throw src/core/server.ts",
+    "dev": "npm run build && npm start",
+    "typecheck": "tsc --noEmit",
+    "test": "node --disable-sigusr1 --test --test-concurrency=1 tests/*.test.ts",
+    "recover": "node --disable-sigusr1 src/core/recover.ts",
+    "check": "npm run typecheck && npm test && npm run build",
+    "test:e2e": "npm run build && playwright test"
+  },
+  "dependencies": {
+    "@fastify/cookie": "11.1.2",
+    "@fastify/rate-limit": "10.3.0",
+    "@fastify/session": "11.1.3",
+    "@fastify/static": "10.1.5",
+    "@fastify/swagger": "9.9.0",
+    "fastify": "5.12.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.19.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.6"
+  },
+  "packageManager": "npm@11.9.0"
+}

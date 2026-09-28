@@ -1,0 +1,67 @@
+# Milestone 1 — Local PC alpha
+
+Status: **first implementation slice prepared for review; full M1 acceptance remains open**.
+Date: 2026-09-28. Baseline: merged [PR #1](https://github.com/danielsantos2310/jarvis/pull/1), commit `d479389241f32c650b6787faa30a5ac59ec9df20`.
+
+Daniel's subsequent instruction, “ok lets go to next step in the project,” authorizes progressing from documentation to the next implementation step. This change implements the roadmap's first reversible local slice. It does not record owner sign-off on all six proposed ADRs or claim the complete M1 release gate has passed.
+
+## What you can try
+
+1. Enroll from a code shown only in the local terminal, choose a password, and open a private dashboard.
+2. Create, complete and delete local tasks; create one-shot reminders; run durable timers through forms or defined text commands.
+3. Inspect current service state, a private due-reminder inbox, redacted action metadata and an explicitly synthetic room-presence adapter.
+4. Pause new actions and delivery, revoke workspace access, restore it with password confirmation, and lock the dashboard.
+
+Start with the [Windows / VS Code quickstart](../development/windows-quickstart.md). The product is a local application served by one Node process, not a hosted service or a free-form AI chatbot. The browser is its interface. No Python, Docker, model weights, microphone, sensor or server purchase is needed for this slice.
+
+## Implementation decisions and readiness
+
+| M0 decision | Resolution for this implementation slice | Remaining gate |
+| --- | --- | --- |
+| D-01 development PC | Earlier user-provided context identifies a Windows work PC with VS Code. Its detailed specifications are unknown. This code uses a cross-platform Node runtime and no audio/GPU dependency. | Actual Windows build, permissions, CPU/RAM/disk and peripherals; do not treat Linux tests as Windows evidence |
+| D-02 first workflows | Implementer selected the bounded workflows above from M1's planned scope. | Daniel's usability review; no weekly capacity assumed |
+| D-03 stack | TypeScript, Fastify, React/Vite, SQLite; [ADR-0007](../adr/0007-m1-local-alpha.md) records why Vite and npm were selected. | Owner review; earlier ADRs remain Proposed |
+| D-04 authentication | First-run terminal enrollment; `@fastify/session`; scrypt password storage; offline terminal recovery. | Windows recovery UX and independent security review before personal pilot |
+| D-06 time/privacy | Use browser-reported IANA timezone for explicit one-shot dates; store UTC instant and timezone. No unsolicited suggestions or audio. | Recurrence/DST policy UI and real reminder setup acceptance |
+| D-12 backups | Restart persistence and credential recovery implemented; no personal backup/restore interface. | Encrypted snapshots, independent deletion journal and restore drill before personal pilot |
+
+The planned future hub remains the user's Alienware Alpha R1 (i5-4590T, GTX 860M-derived 2 GB GPU, 8 GB DDR3L, 1 TB HDD), as described in prior project context. These are supplied specifications, not verified inventory. No performance claim or upgrade purchase follows from them.
+
+## Contracts and boundaries
+
+- Fastify owns authentication, schemas, storage and the action gateway. React never accesses SQLite or any integration directly.
+- Only `127.0.0.1` is bound. Exact Host and Origin checks reject LAN/public proxies and unapproved browser origins. The documented address uses `127.0.0.1`, not `localhost`.
+- Login uses a fixed 30-minute server-validated session, HttpOnly/SameSite=Strict cookie and a random per-process signing key. Restart, recovery and logout invalidate sessions. HTTP/`secure:false` is restricted to this loopback profile; it is not a LAN configuration.
+- Mutations require JSON, exact Origin and session CSRF token. Actor and household are loaded from the trusted session and checked again in the write transaction. User fields cannot supply authority.
+- Explicit enrollment grants only own local records. Revocation excludes private items and notices from responses. Restoration/resumption/revocation require password confirmation. Chat cannot manage grants.
+- The P2 action registry contains create, complete, delete-one-item and dismiss-one-notice. Unknown fields/actions fail schema validation. External actions, P3/P4, integrations and third-party executable widgets have no executor.
+- Core scheduler and action writes are transactional. Audit write failure rolls back local effects. New creates and scheduler delivery stop while paused; manual completion/deletion remain possible.
+- Text parser accepts a deliberately small grammar. Unsupported requests return help. A task title is inert data, including markup or instruction-like text.
+- Request IDs deduplicate successful writes for 30 days. Changed content using the same ID conflicts. Relative command retries use a stable command fingerprint, preserving the first stored deadline. Clients do not automatically retry writes.
+- Pending one-shot reminders survive restart and reach the private inbox once. More than five seconds late is labelled missed. Delivery is silent; no speech, sound, OS push or replayed external effect exists in this slice.
+- Synthetic room state lives in memory, expires to unknown after 30 seconds, and cannot establish identity or activate recording.
+
+## Storage, privacy and limits
+
+One SQLite database contains owner/auth metadata, items, notices, settings, idempotency receipts, redacted audit records and deletion tombstones. No default conversation history, browser local/session storage, service worker, analytics or outbound application integration is used. React renders strings as text. CSP and Permissions-Policy disable third-party resources, microphone, camera, geolocation and framing.
+
+Titles persist until deleted. Notices reference live items and expire after seven days. Audit/receipts expire after 30 days, tombstones after 35 days for this no-backup alpha. Transactions and foreign keys remove linked notices. **Tombstones in this database are not an independent backup deletion journal. Personal backup restoration is not supported yet.**
+
+Limits: 4 KiB request body; 500-character command; 160-character title; 1,000 items; 20,000 receipts; 50,000 audit rows; 100 sessions; global/request-specific rate limits. Password derivation is serialized to cap memory use. Schema 1 is migrated transactionally on first open; a newer schema is refused. The local runtime lock prevents two normal launch/recovery processes from using the same data directory concurrently. A stale lock requires operator inspection after a crash.
+
+Database content is not application-encrypted. Linux directory/file permissions are restricted; Windows uses the current account's inherited permissions. Host encryption, account protection, off-disk encrypted backups and deletion replay are prerequisites for a personal/home pilot. Start with synthetic examples on the work PC.
+
+## Exit evidence and follow-up backlog
+
+See the [test report](../testing/m1-slice-1.md) for exact executed results and limits.
+
+| ID | Next bounded work | Gate / evidence |
+| --- | --- | --- |
+| M1-02 | Run this slice on Daniel's Windows PC, record inventory and recovery UX | Local login, create/restart, Ctrl+C/restart, password recovery; real OS evidence |
+| M1-03 | Add recurrence and an explicit DST ambiguity preview | T-13 full skip/repeat/missed-policy coverage |
+| M1-04 | Implement encrypted backup and independent deletion replay | T-26 and recovery smoke; no revival of deleted content |
+| M1-05 | Replace one-second polling with authorized live updates if needed | T-09/T-30, measured end-to-end p95 and resource budget |
+| M1-06 | Validate host network denial, disk-full/quota behavior, accessibility and release environment | T-01/T-24/T-33/T-35/T-36; remaining M1 release gates |
+| M1-07 | Owner review of this slice and M1 closeout | Record actual decisions, remaining defects and acceptance |
+
+M2 voice starts after a dependable M1 baseline, microphone/language inventory and the local voice benchmark plan. Do not jump to multi-room listening or physical device control from this alpha.

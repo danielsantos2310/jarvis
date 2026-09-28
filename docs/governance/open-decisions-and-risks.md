@@ -1,5 +1,7 @@
 # Open decisions and risk register
 
+Implementation update (2026-09-28): see [M1 slice 1](../milestones/001-local-alpha.md) and [ADR-0007](../adr/0007-m1-local-alpha.md) for selected choices, prior Windows/hub context and remaining gates. The proposal register below is the M0 baseline.
+
 Version 0.1 · Unknown values are intentionally not invented.
 
 ## Open decisions
