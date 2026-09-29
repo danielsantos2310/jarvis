@@ -1,5 +1,11 @@
 # Changelog
 
+## Static dashboard preview — 2026-09-29
+
+- Added an explicit sample-data build for GitHub Pages with relative asset URLs and no backend connection or browser storage.
+- Added interactive task, timer, permission, pause and synthetic presence demonstrations, reset on reload.
+- Added project-subpath browser coverage and deployment instructions; live hosting activation remains pending.
+
 ## Local alpha 0.4.0-alpha.4 — 2026-09-29
 
 - Added opt-in daily backups with a terminal password held only for the running session.

@@ -6,6 +6,10 @@ Local-first proactive AI assistant with voice, presence awareness, smart-home in
 
 JARVIS starts on one PC and is designed to grow into a private, multi-room home assistant. It should be useful offline, understand when to stay quiet, and keep every action inside permissions controlled by the user.
 
+## Browser preview
+
+An interactive sample-data dashboard is prepared for GitHub Pages. See [preview build, hosting setup and limits](docs/development/github-pages-preview.md). It resets on reload and does not connect to a real workspace. Hosting activation is still pending.
+
 ## Run the local alpha
 
 Use Node.js 24.19.0 or a compatible supported Node 24 patch. In the repository folder:
