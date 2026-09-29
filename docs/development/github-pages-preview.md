@@ -22,7 +22,7 @@ The deployment branch is prepared separately from the draft source PR. In reposi
 
 https://danielsantos2310.github.io/jarvis/
 
-That address is not proof of an active deployment. Verify the Pages status and load the site before calling it live. At the time this change was prepared, Pages was not enabled and the available GitHub connector could not change that setting. Repository visibility must remain private unless the owner explicitly decides otherwise. Private-repository Pages availability depends on the owner's GitHub plan; the preview may be publicly accessible even though its source repository is private.
+That address is not proof of an active deployment. Verify the Pages status and load the site before calling it live. On 2026-09-29, the owner made the repository public temporarily and Pages was enabled from `gh-pages` / root. The live dashboard was verified for task creation/completion, timer delivery, synthetic presence and reset. Return to private is planned after the owner finishes testing; the account settings confirmed that private-repository Pages requires an upgrade. Private-repository Pages availability depends on the owner's GitHub plan; the preview may be publicly accessible even though its source repository is private.
 
 ## Scope and validation
 

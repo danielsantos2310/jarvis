@@ -8,7 +8,7 @@ JARVIS starts on one PC and is designed to grow into a private, multi-room home 
 
 ## Browser preview
 
-An interactive sample-data dashboard is prepared for GitHub Pages. See [preview build, hosting setup and limits](docs/development/github-pages-preview.md). It resets on reload and does not connect to a real workspace. Hosting activation is still pending.
+An interactive sample-data dashboard is prepared for GitHub Pages. See [preview build, hosting setup and limits](docs/development/github-pages-preview.md). It resets on reload and does not connect to a real workspace. [Open the live sample preview](https://danielsantos2310.github.io/jarvis/), verified on 2026-09-29. The owner made the repository public temporarily for testing; returning it to private can disable Pages on the current account plan.
 
 ## Run the local alpha
 

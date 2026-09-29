@@ -22,6 +22,23 @@ test('local browser workflow: enrollment, inert titles, reminders, pause, scopes
   await page.getByLabel('Task title').fill('Review the JARVIS local alpha');
   await page.locator('.task-form').getByRole('button', { name: 'Add', exact: true }).click();
   await expect(page.locator('.item').getByText('Review the JARVIS local alpha', { exact: true })).toBeVisible();
+  // An older polling response must not replace a newer post-action snapshot.
+  let releaseOld!: () => void; let oldReady!: () => void;
+  const oldGate = new Promise<void>(resolve => { releaseOld = resolve; });
+  const oldCaptured = new Promise<void>(resolve => { oldReady = resolve; });
+  await page.route('**/api/snapshot', async route => {
+    const response = await route.fetch(); oldReady(); await oldGate;
+    await route.fulfill({response});
+  }, {times:1});
+  await oldCaptured;
+  await page.getByLabel('Task title').fill('Keep the newest snapshot');
+  await page.locator('.task-form').getByRole('button', {name:'Add',exact:true}).click();
+  await expect(page.getByRole('button', {name:'Complete Keep the newest snapshot',exact:true})).toBeVisible();
+  const oldArrived = page.waitForResponse('**/api/snapshot');
+  releaseOld(); await oldArrived;
+  // Observe after the stale response has been consumed, before the next poll.
+  await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  await expect(page.getByRole('button', {name:'Complete Keep the newest snapshot',exact:true})).toBeVisible();
   await page.getByLabel('Ask JARVIS').fill('timer 2 seconds');
   await page.getByRole('button', { name: 'Send command' }).click();
   await expect(page.locator('.notice').getByText('2 seconds timer', { exact: true })).toBeVisible({ timeout: 10000 });
@@ -76,6 +93,14 @@ test('local browser workflow: enrollment, inert titles, reminders, pause, scopes
   await expect(page.locator('.item').filter({ hasText: 'Morning stretch' })).toContainText('Completed');
   await page.getByRole('button', { name: 'Controls', exact: true }).click();
   const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('button', { name: 'Close controls' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(dialog.getByRole('button', { name: 'Pause actions & delivery' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Controls', exact: true })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeVisible();
   await dialog.getByRole('button', { name: 'Pause actions & delivery' }).click();
   await expect(dialog.getByRole('button', { name: 'Pause actions & delivery' })).toBeDisabled();
   await dialog.getByLabel('Confirm with your password').fill(password);
@@ -98,7 +123,37 @@ test('local browser workflow: enrollment, inert titles, reminders, pause, scopes
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({ path: 'artifacts/workspace-mobile.png', fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
+  // Freeze a real authenticated snapshot and logout: locking must hide immediately,
+  // even if an earlier read arrives while server sign-out is still pending.
+  let releaseSnapshot!: () => void; let snapshotHeld!: () => void;
+  const snapshotReady = new Promise<void>(resolve => { snapshotHeld = resolve; });
+  const snapshotGate = new Promise<void>(resolve => { releaseSnapshot = resolve; });
+  await page.route('**/api/snapshot', async route => {
+    const response = await route.fetch(); snapshotHeld(); await snapshotGate;
+    await route.fulfill({response});
+  }, {times:1});
+  await snapshotReady;
+  let releaseLogout!: () => void;
+  const logoutGate = new Promise<void>(resolve => { releaseLogout = resolve; });
+  await page.route('**/api/logout', async route => { await logoutGate; await route.continue(); }, {times:1});
   await page.getByRole('button', { name: 'Lock workspace' }).click();
+  await expect(page.getByRole('status')).toContainText('Workspace hidden.');
+  await expect(page.getByText('Review the JARVIS local alpha', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', {name:'Please wait…'})).toBeDisabled();
+  const lateSnapshot = page.waitForResponse('**/api/snapshot');
+  releaseSnapshot();
+  await lateSnapshot;
+  await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
+  releaseLogout();
+  await expect(page.getByRole('button', { name: 'Unlock workspace' })).toBeEnabled();
+  // Verify login still works after confirmed logout, then simulate unreachable core.
+  await page.getByLabel('Password', {exact:true}).fill(password);
+  await page.getByRole('button', {name:'Unlock workspace'}).click();
+  await expect(page.getByText('Review the JARVIS local alpha', {exact:true})).toBeVisible();
+  await page.route('**/api/logout', route => route.abort(), {times:1});
+  await page.getByRole('button', {name:'Lock workspace'}).click();
+  await expect(page.getByRole('alert')).toContainText('server could not confirm sign-out');
+
   await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
   await expect(page.getByText('Review the JARVIS local alpha', { exact: true })).toHaveCount(0);
   const state = await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }));
