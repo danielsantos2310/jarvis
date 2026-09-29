@@ -42,9 +42,10 @@ function Icon({ kind }: { kind: string }) {
 }
 function App() {
   const [auth, setAuth] = useState<Auth | null>(null);
-  const authRef = useRef<Auth | null>(null); const generation = useRef(0);
+  const authRef = useRef<Auth | null>(null); const generation = useRef(0); const snapshotRequest = useRef(0);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [online, setOnline] = useState(false); const [error, setError] = useState('');
+  const [locking, setLocking] = useState(false);
   const [command, setCommand] = useState(''); const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<{ text: string; at: number }[]>([]);
   const [clock, setClock] = useState(Date.now()); const [controls, setControls] = useState(false);
@@ -52,10 +53,11 @@ function App() {
   const controlRef = useRef<HTMLDialogElement>(null);
   function changeAuth(value: Auth) {
     generation.current++; authRef.current = value; setAuth(value);
-    setSnapshot(null); setMessages([]); setCommand(''); setControls(false);
+    setSnapshot(null); setMessages([]); setCommand(''); setControls(false); setOnline(false); setBusy(false);
   }
   async function api<T>(path: string, body?: unknown): Promise<T> {
     if (__JARVIS_DEMO__) return await demoRequest(path, body) as T;
+    const requestGeneration = generation.current;
     let response: Response;
     try { response = await fetch(`/api/${path}`, { method: body === undefined ? 'GET' : 'POST', credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10_000),
       headers: body === undefined ? {} : { 'Content-Type': 'application/json', 'X-CSRF-Token': authRef.current?.csrf ?? '' },
@@ -63,18 +65,18 @@ function App() {
     catch { throw new Error('Cannot reach JARVIS. Check the terminal and keep the PC awake.'); }
     const data = await response.json();
     if (!response.ok) {
-      if (data.error === 'LOGIN_REQUIRED') changeAuth({ authenticated: false, setupRequired: false });
+      if (data.error === 'LOGIN_REQUIRED' && requestGeneration === generation.current) changeAuth({ authenticated: false, setupRequired: false });
       throw new Error(errors[data.error] ?? `Request failed (${response.status}). Check your input or retry.`);
     }
     return data;
   }
   async function refresh() {
-    const at = generation.current;
+    const at = generation.current; const request = ++snapshotRequest.current;
     try {
       const next = await api<Snapshot>('snapshot');
-      if (at === generation.current && authRef.current?.authenticated) { setSnapshot(next); setOnline(true); }
+      if (at === generation.current && request === snapshotRequest.current && authRef.current?.authenticated) { setSnapshot(next); setOnline(true); }
     } catch (e) {
-      if (at === generation.current) { setOnline(false); setError((e as Error).message); }
+      if (at === generation.current && request === snapshotRequest.current) { setOnline(false); setError((e as Error).message); }
     }
   }
   useEffect(() => {
@@ -101,9 +103,9 @@ function App() {
         if (result.reply) setMessages(old => [...old, { text: result.reply!, at: Date.now() }].slice(-8));
         await refresh();
       }
-      return true;
+      return at === generation.current;
     } catch (e) { if (at === generation.current) setError((e as Error).message); return false; }
-    finally { setBusy(false); }
+    finally { if (at === generation.current) setBusy(false); }
   }
   async function act(action: Action) { return run({ requestId: crypto.randomUUID(), action }); }
   async function send(text: string) {
@@ -113,12 +115,16 @@ function App() {
   }
   async function lock() {
     if (__JARVIS_DEMO__) { location.reload(); return; }
-    const ok = await run({}, 'logout');
+    // Capture the current CSRF token before removing all private UI state.
+    const signOut = api('logout', {});
     changeAuth({ authenticated: false, setupRequired: false });
-    if (!ok) setError('This screen is hidden, but the server could not confirm sign-out. Close the browser while the server is unavailable.');
+    setLocking(true); setError('');
+    try { await signOut; }
+    catch { setError('This screen is hidden, but the server could not confirm sign-out. Close the browser while the server is unavailable.'); }
+    finally { setLocking(false); }
   }
   async function login(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); const fields = new FormData(event.currentTarget); setBusy(true); setError('');
+    event.preventDefault(); if (locking || busy) return; const fields = new FormData(event.currentTarget); setBusy(true); setError('');
     try {
       const value = await api<Auth>(auth?.setupRequired ? 'enroll' : 'login', auth?.setupRequired
         ? { password: fields.get('password'), code: fields.get('code'), localConsent: fields.get('consent') === 'on' }
@@ -144,8 +150,9 @@ function App() {
         {auth?.setupRequired && <label>Setup code<input name="code" required autoComplete="off" spellCheck={false}/><small>Copy the one-time code from your terminal.</small></label>}
         <label>Password<input aria-label="Password" name="password" type="password" minLength={12} maxLength={128} required autoComplete={auth?.setupRequired ? 'new-password' : 'current-password'}/><small>{auth?.setupRequired ? 'Use at least 12 characters.' : 'Your password stays on this PC.'}</small></label>
         {auth?.setupRequired && <label className="consent"><input type="checkbox" name="consent" required/>Allow JARVIS to store and manage my local tasks, reminders and timers.</label>}
-        <button className="primary wide" disabled={busy || !auth}>{busy ? 'Please wait…' : auth?.setupRequired ? 'Create workspace' : 'Unlock workspace'}<Icon kind="arrow"/></button>
+        <button className="primary wide" disabled={busy || locking || !auth}>{busy || locking ? 'Please wait…' : auth?.setupRequired ? 'Create workspace' : 'Unlock workspace'}<Icon kind="arrow"/></button>
       </form>}
+      {locking && <p role="status">Workspace hidden. Confirming server sign-out…</p>}
       {error && <p className="error" role="alert">{error}</p>}
       {!auth && error && <button onClick={() => location.reload()}>Retry connection</button>}
       <p className="entry-note"><Icon kind="lock"/>One PC. One private workspace.<br/>Voice and cloud connections are off.</p>

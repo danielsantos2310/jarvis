@@ -1,5 +1,13 @@
 # Changelog
 
+## UI reliability checkpoint — 2026-09-29
+
+- Hide private content immediately on Lock, with explicit pending/failed server sign-out status.
+- Ignore older snapshots and authentication errors from an earlier UI session.
+- Add delayed/failed response and keyboard control regression coverage.
+- Record the live Pages preview and the owner’s temporary public-repository testing choice.
+
+
 ## Static dashboard preview — 2026-09-29
 
 - Added an explicit sample-data build for GitHub Pages with relative asset URLs and no backend connection or browser storage.

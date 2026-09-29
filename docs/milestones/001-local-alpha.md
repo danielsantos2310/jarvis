@@ -39,6 +39,10 @@ The planned future hub remains the user's Alienware Alpha R1 (i5-4590T, GTX 860M
 
 [Session-unlocked automatic backups](../development/automatic-backups.md) now create daily snapshots while the core runs and rotate only verified scheduler-owned files. The password is entered each start and stays in memory. [ADR-0010](../adr/0010-session-backup-scheduler.md) records limits; no OS service, unattended credential storage or completed Windows acceptance is claimed.
 
+## UI reliability checkpoint — 2026-09-29
+
+[Immediate locking and stale-response checks](../testing/m1-ui-reliability.md) remove private content before waiting for logout, reject older snapshots and exercise keyboard controls. These are bounded T-02/T-16/T-33 checks; Windows and complete M1 acceptance remain open.
+
 ## Contracts and boundaries
 
 - Fastify owns authentication, schemas, storage and the action gateway. React never accesses SQLite or any integration directly.
