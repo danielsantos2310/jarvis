@@ -17,7 +17,8 @@
     "test:e2e": "npm run build && playwright test",
     "backup": "node --disable-sigusr1 --disable-proto=throw src/core/backup-cli.ts",
     "validate:pc": "node --disable-sigusr1 --disable-proto=throw src/validation/pc-cli.ts",
-    "start:backups": "node --disable-sigusr1 --disable-proto=throw src/core/server.ts --backups"
+    "start:backups": "node --disable-sigusr1 --disable-proto=throw src/core/server.ts --backups",
+    "build:demo": "tsc --noEmit && vite build --mode demo"
   },
   "dependencies": {
     "@fastify/cookie": "11.1.2",

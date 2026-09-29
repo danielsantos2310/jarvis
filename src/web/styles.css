@@ -7,3 +7,8 @@
 .schedule-options{grid-column:1/-1;border:1px solid var(--line);border-radius:8px;padding:14px;background:#111a20}.schedule-options label{font-size:10px;margin:0 0 12px}.schedule-options input,.schedule-options select{font-size:11px;padding:9px;margin-top:5px}.schedule-options>button{font-size:11px}.schedule-fields{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.schedule-options select{max-width:100%}.schedule-preview{margin-top:14px;border-left:2px solid var(--mint);padding:8px 0 2px 12px;font-size:11px}.schedule-preview strong{font-size:11px;font-weight:500}.schedule-preview ol{padding-left:18px}.schedule-preview li{margin:10px 0}.schedule-preview small{display:block;font-size:10px}.schedule-preview p{font-size:10px;color:var(--muted);margin-bottom:5px}.schedule-options .error{margin:12px 0 0}@media(max-width:1150px){.schedule-fields{grid-template-columns:1fr}}
 
 .recovery-card { margin-bottom: 20px; }
+
+.demo-banner { border: 1px solid #70cbbb; border-radius: 14px; background: #122b2b; padding: 18px 22px; margin-bottom: 24px; }
+.demo-banner strong { color: #a5eadb; }
+.demo-banner p { line-height: 1.65; margin: 10px 0; }
+.demo-banner a { color: #a5eadb; text-decoration: underline; }

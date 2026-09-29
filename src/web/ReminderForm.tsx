@@ -5,10 +5,11 @@ import type { Schedule, SchedulePreview } from '../shared/schedule.ts';
 
 interface Props {
   disabled: boolean;
+  demo?: boolean;
   create: (action: Action) => Promise<boolean>;
   preview: (schedule: Schedule) => Promise<SchedulePreview>;
 }
-export function ReminderForm({ disabled, create, preview }: Props) {
+export function ReminderForm({ disabled, create, preview, demo = false }: Props) {
   const [title, setTitle] = useState('');
   const [schedule, setSchedule] = useState<Schedule>({ frequency: 'once', localStart: '',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, gap: 'next-valid', overlap: 'earlier', missed: 'inbox' });
@@ -41,7 +42,7 @@ export function ReminderForm({ disabled, create, preview }: Props) {
     <label className="sr-only" htmlFor="task-title">Task title</label>
     <input id="task-title" placeholder="What would you like to remember?" required maxLength={160} value={title} onChange={e => setTitle(e.target.value)}/>
     <button className="primary" disabled={disabled || waiting || (!!schedule.localStart && !ready)}>Add</button>
-    <label className="date-label">Optional reminder time<input aria-label="Reminder start" type="datetime-local" value={schedule.localStart} onChange={e => change('localStart', e.target.value)}/></label>
+    {demo ? <p className="fineprint">For a sample reminder, try “remind me in 10 seconds to stretch” above. Calendar recurrence is available in the local installation.</p> : <label className="date-label">Optional reminder time<input aria-label="Reminder start" type="datetime-local" value={schedule.localStart} onChange={e => change('localStart', e.target.value)}/></label>}
     {schedule.localStart && <div className="schedule-options">
       <div className="schedule-fields">
         <label>Repeat<select aria-label="Repeat" value={schedule.frequency} onChange={e => change('frequency', e.target.value as Schedule['frequency'])}>
