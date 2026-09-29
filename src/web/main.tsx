@@ -3,6 +3,8 @@ import type { FormEvent, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Action, Snapshot, Item } from '../shared/contracts.ts';
 import './styles.css';
+import './hud.css';
+import { CoreDisplay } from './CoreDisplay.tsx';
 import { demoRequest } from './demo.ts';
 import { ReminderForm } from './ReminderForm.tsx';
 import type { SchedulePreview } from '../shared/schedule.ts';
@@ -176,7 +178,7 @@ function App() {
           <div className="suggestions"><button disabled={busy || !online} onClick={() => void send('timer 5 minutes')}><Icon kind="clock"/>5-minute timer</button><button onClick={() => { setCommand('add task '); document.getElementById('command')?.focus(); }}><Icon kind="plus"/>Add a task</button><button disabled={busy || !online} onClick={() => void send('help')}>What can you do?</button></div>
           <div className="responses" aria-live="polite">{messages.slice(-1).map(m => <p key={m.at}>{m.text}</p>)}</div>
           <small className="command-note">Defined text commands · No AI model connected · Microphone off</small>
-        </div><div className="orb" aria-hidden="true"><div className="orb-ring"><div className="orb-inner">J<span>LOCAL CORE</span></div></div><span className="orb-caption">A LITTLE SPACE TO THINK</span></div></section>
+        </div><CoreDisplay/></section>
         <div className="metric-grid"><div className="metric"><Icon kind="task"/><div><span>Open tasks</span><strong>{snapshot?.grant ? tasks.filter(t => t.state === 'active').length : '—'}<small>in your workspace</small></strong></div></div><div className="metric"><Icon kind="clock"/><div><span>Active timers</span><strong>{snapshot?.grant ? timers.length : '—'}<small>kept on this PC</small></strong></div></div><div className="metric"><Icon kind="lock"/><div><span>Processing</span><strong className="metric-word">{__JARVIS_DEMO__ ? 'Browser' : 'Local'}<small>{__JARVIS_DEMO__ ? 'sample workspace' : 'cloud disabled'}</small></strong></div></div></div>
         {snapshot && !__JARVIS_DEMO__ && <section className="card recovery-card" aria-label="Backup and recovery"><h2>Backup & recovery</h2>
           <p>{!snapshot.recovery.configured ? 'Backups are not configured. Use the backup guide to choose a separate recovery location.' : snapshot.recovery.lastBackupAt ? `Last backup: ${timeLabel(snapshot.recovery.lastBackupAt)}` : 'Recovery location configured. Create your first encrypted backup from the terminal.'}</p>

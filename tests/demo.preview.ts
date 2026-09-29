@@ -36,5 +36,12 @@ test('static preview works under the project path without backend or browser sto
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   expect(await page.evaluate(()=>[localStorage.length,sessionStorage.length])).toEqual([0,0]);
   await page.screenshot({path:'artifacts/pages-mobile.png',fullPage:true});
+  for (const width of [320, 768, 1024]) {
+    await page.setViewportSize({width,height:900});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await expect(page.getByLabel('Ask JARVIS')).toBeVisible();
+    await expect(page.getByRole('button',{name:'Controls',exact:true})).toBeVisible();
+  }
+  await expect(page.locator('.core-display')).toHaveAttribute('aria-hidden','true');
   expect(unexpected).toEqual([]); expect(errors).toEqual([]);
 });
