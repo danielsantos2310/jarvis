@@ -25,3 +25,5 @@ No models, voices or third-party image/font assets are bundled. Browser QA uses 
 ## Alpha 3 recovery
 
 No new package dependency. Uses pinned Node 24 native `node:sqlite` backup and `node:crypto` AES-256-GCM/scrypt. The versioned format, local key custody and limitations are described in [ADR-0009](../adr/0009-encrypted-recovery.md).
+
+Alpha 4 adds no package dependency. Its scheduler uses the same SQLite and crypto primitives, with one in-flight backup and an encrypted ownership catalog; see [ADR-0010](../adr/0010-session-backup-scheduler.md).

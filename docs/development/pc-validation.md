@@ -55,7 +55,7 @@ Durations are a tiny synthetic smoke test, not the full workload latency benchma
 - Validate removable-drive disconnect/reconnect and pending-cleanup behavior on Windows. The automatic smoke test does not unplug a drive or inject a real power failure.
 - Confirm OS account permissions, disk encryption, WAN denial, accessibility, full-workload performance and disk-full/power-loss recovery before M1 acceptance.
 
-Automatic backup scheduling and rotation remain unimplemented. This validation command does not configure backups for your real workspace or close M1 automatically.
+Separately validate [automatic session backups](automatic-backups.md) on the actual PC; that opt-in scheduler is not enabled by this validation command. This validation command does not configure backups for your real workspace or close M1 automatically.
 
 ## Development verification
 

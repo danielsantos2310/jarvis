@@ -18,6 +18,7 @@ test('local browser workflow: enrollment, inert titles, reminders, pause, scopes
   await page.getByRole('button', { name: 'Create workspace' }).click();
   await expect(page.getByRole('heading', { name: 'Ready when you are.' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Backup and recovery' })).toContainText('Backups are not configured');
+  await expect(page.getByRole('region', { name: 'Backup and recovery' })).toContainText('Automatic backups are off for this session.');
   await page.getByLabel('Task title').fill('Review the JARVIS local alpha');
   await page.locator('.task-form').getByRole('button', { name: 'Add', exact: true }).click();
   await expect(page.locator('.item').getByText('Review the JARVIS local alpha', { exact: true })).toBeVisible();

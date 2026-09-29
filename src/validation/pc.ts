@@ -42,7 +42,7 @@ export async function validatePc(recoveryDirectory: string): Promise<{ report: P
     'Complete the browser, keyboard, mobile layout and hidden terminal-password workflow on this PC.',
     'Validate Ctrl+C shutdown, restart, sleep/wake and removable-drive disconnect/reconnect using synthetic data.',
     'Validate OS-enforced WAN denial, disk-full/power-loss behavior, accessibility and the full workload performance gate.',
-    'Automatic backup scheduling/rotation and the household RPO/RTO drill remain open.',
+    'Validate opt-in session scheduling/retention on this PC; the household RPO/RTO drill remains open.',
   ] };
   let sourceRoot: string | undefined; let recoveryRoot: string | undefined; let source: Store | undefined; let restored: Store | undefined;
   let app: Awaited<ReturnType<typeof createApp>> | undefined; const remainingPaths: string[] = [];

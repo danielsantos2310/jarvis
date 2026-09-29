@@ -107,3 +107,7 @@ Stop JARVIS, then follow [backup and recovery](backup-recovery.md). Commands con
 ## Collect PC validation evidence
 
 Use the [PC validation command](pc-validation.md) to generate an actual Windows runtime/recovery report using isolated synthetic records. The automatic drill supplements the manual browser, hidden-password and removable-drive checks; it does not replace them.
+
+## Optional daily backups while JARVIS runs
+
+After configuring recovery, use `npm run start:backups` and enter the scheduled-backup password in the terminal. It enables daily UTC snapshots and rotation of scheduler-owned copies for this process session. Ordinary `npm start` leaves this off. Read the [automatic backup guide](automatic-backups.md) before enabling retention.

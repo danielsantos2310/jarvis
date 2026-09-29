@@ -40,3 +40,7 @@ Automatic daily/weekly scheduling and backup rotation are unimplemented. Restore
 An offline restore cannot detect rollback of the entire recovery location beyond every surviving checkpoint. The operator must provide the latest independent journal; unresolved pending deletions after source loss must be reconciled before personal data is made available. No old-journal override is implemented. Original and restored cores must not run concurrently.
 
 See [recovery guide](../development/backup-recovery.md), [ADR-0009](../adr/0009-encrypted-recovery.md), [M1 remaining gates](../milestones/001-local-alpha.md) and the historical [slice-2 report](m1-slice-2.md).
+
+## Subsequent work
+
+[Slice 4](m1-slice-4.md) adds optional live session scheduling/rotation and separately verified live snapshot consistency. The manual-only limits above describe the alpha-3 test baseline.

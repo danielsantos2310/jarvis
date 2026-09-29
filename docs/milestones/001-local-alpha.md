@@ -1,6 +1,6 @@
 # Milestone 1 — Local PC alpha
 
-Status: **implementation slices 1–3 prepared for review; full M1 acceptance remains open**.
+Status: **implementation slices 1–4 prepared for review; full M1 acceptance remains open**.
 Date: 2026-09-28. Baseline: merged [PR #1](https://github.com/danielsantos2310/jarvis/pull/1), commit `d479389241f32c650b6787faa30a5ac59ec9df20`.
 
 Daniel's subsequent instruction, “ok lets go to next step in the project,” authorizes progressing from documentation to the next implementation step. This change implements the roadmap's first reversible local slice. It does not record owner sign-off on all six proposed ADRs or claim the complete M1 release gate has passed.
@@ -23,7 +23,7 @@ Start with the [Windows / VS Code quickstart](../development/windows-quickstart.
 | D-03 stack | TypeScript, Fastify, React/Vite, SQLite; [ADR-0007](../adr/0007-m1-local-alpha.md) records why Vite and npm were selected. | Owner review; earlier ADRs remain Proposed |
 | D-04 authentication | First-run terminal enrollment; `@fastify/session`; scrypt password storage; offline terminal recovery. | Windows recovery UX and independent security review before personal pilot |
 | D-06 time/privacy | Use browser-reported IANA timezone for explicit one-shot dates; store UTC instant and timezone. No unsolicited suggestions or audio. | Recurrence/DST UI implemented in slice 2; real reminder setup acceptance pending |
-| D-12 backups | Manual encrypted snapshots, independent deletion journal and isolated restore implemented in slice 3. | Daniel selects off-disk location/key custody; actual Windows recovery, retention automation and independent review before personal pilot |
+| D-12 backups | Manual encrypted snapshots, independent deletion journal and isolated restore implemented in slice 3; session scheduling/retention added in slice 4. | Daniel selects off-disk location/key custody; actual Windows recovery, retention acceptance and independent review before personal pilot |
 
 The planned future hub remains the user's Alienware Alpha R1 (i5-4590T, GTX 860M-derived 2 GB GPU, 8 GB DDR3L, 1 TB HDD), as described in prior project context. These are supplied specifications, not verified inventory. No performance claim or upgrade purchase follows from them.
 
@@ -33,7 +33,11 @@ The planned future hub remains the user's Alienware Alpha R1 (i5-4590T, GTX 860M
 
 ## Slice 3 update — 2026-09-29
 
-[Encrypted recovery](../development/backup-recovery.md) adds stopped-core backup commands, authenticated snapshots, independent deletion replay, pending-cleanup status and isolated restoration with a new password, revoked grants and paused delivery. [ADR-0009](../adr/0009-encrypted-recovery.md) and [slice-3 evidence](../testing/m1-slice-3.md) record the bounded M1-04 implementation and schema-3 migration. Automatic scheduling/rotation, Windows recovery and full personal-pilot acceptance remain open.
+[Encrypted recovery](../development/backup-recovery.md) adds stopped-core backup commands, authenticated snapshots, independent deletion replay, pending-cleanup status and isolated restoration with a new password, revoked grants and paused delivery. [ADR-0009](../adr/0009-encrypted-recovery.md) and [slice-3 evidence](../testing/m1-slice-3.md) record the bounded M1-04 implementation and schema-3 migration. Slice 4 adds opt-in session scheduling/rotation; Windows recovery and full personal-pilot acceptance remain open.
+
+## Slice 4 update — 2026-09-29
+
+[Session-unlocked automatic backups](../development/automatic-backups.md) now create daily snapshots while the core runs and rotate only verified scheduler-owned files. The password is entered each start and stays in memory. [ADR-0010](../adr/0010-session-backup-scheduler.md) records limits; no OS service, unattended credential storage or completed Windows acceptance is claimed.
 
 ## Contracts and boundaries
 
@@ -55,7 +59,7 @@ One SQLite database contains owner/auth metadata, items, notices, settings, idem
 
 Titles persist until deleted. Notices reference live items and expire after seven days. Audit/receipts expire after 30 days. Deletion IDs are now retained conservatively in SQLite and, when configured, a separate encrypted journal. Transactions and foreign keys remove linked notices. Failed journal synchronization leaves live deletion effective and reports backup cleanup pending. Restoration requires the current independent journal; a snapshot alone is insufficient.
 
-Limits: 4 KiB request body; 500-character command; 160-character title; 1,000 items; 20,000 receipts; 50,000 audit rows; 100 sessions; global/request-specific rate limits. Password derivation is serialized to cap memory use. Schemas 1 and 2 upgrade to schema 3 on open; a newer schema is refused. The local runtime lock prevents two normal launch/recovery processes from using the same data directory concurrently. A stale lock requires operator inspection after a crash.
+Limits: 4 KiB request body; 500-character command; 160-character title; 1,000 items; 20,000 receipts; 50,000 audit rows; 100 sessions; global/request-specific rate limits. Login derivation is serialized; an opted-in backup derivation can overlap it. Low-memory and performance validation remain open. Schemas 1 and 2 upgrade to schema 3 on open; a newer schema is refused. The local runtime lock prevents two normal launch/recovery processes from using the same data directory concurrently. A stale lock requires operator inspection after a crash.
 
 Database content is not application-encrypted. Linux directory/file permissions are restricted; Windows uses the current account's inherited permissions. Host encryption, account protection, off-disk encrypted backups and deletion replay are prerequisites for a personal/home pilot. Start with synthetic examples on the work PC.
 
@@ -67,7 +71,7 @@ See the [slice-1](../testing/m1-slice-1.md), [slice-2](../testing/m1-slice-2.md)
 | --- | --- | --- |
 | M1-02 | [PC validation runner](../development/pc-validation.md) implemented; execute on Daniel's Windows PC and record inventory/recovery UX | Runner verified on Linux; actual Windows report, Ctrl+C/restart, browser and human password recovery remain pending |
 | M1-03 | Daily/weekly recurrence and explicit DST preview implemented | Synthetic tests and browser evidence in slice 2; Windows/owner review pending |
-| M1-04 | Manual encrypted backup and independent deletion replay implemented | T-26 and isolated recovery smoke in slice 3; Windows/off-disk drill, retention automation and acceptance pending |
+| M1-04 | Manual encrypted backup and independent deletion replay implemented | T-26 and isolated recovery smoke in slice 3; Windows/off-disk drill and acceptance pending; session scheduling/retention implemented in slice 4 |
 | M1-05 | Replace one-second polling with authorized live updates if needed | T-09/T-30, measured end-to-end p95 and resource budget |
 | M1-06 | Validate host network denial, disk-full/quota behavior, accessibility and release environment | T-01/T-24/T-33/T-35/T-36; remaining M1 release gates |
 | M1-07 | Owner review of this slice and M1 closeout | Record actual decisions, remaining defects and acceptance |

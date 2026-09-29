@@ -27,3 +27,7 @@ Live database/staging plaintext relies on host protection. Forced termination ma
 [Recovery guide](../development/backup-recovery.md) · [Slice-3 tests](../testing/m1-slice-3.md) · [Privacy baseline](../governance/privacy.md) · [Deployment baseline](../architecture/deployment.md).
 
 Primary APIs: [SQLite backup](https://www.sqlite.org/backup.html), [Node SQLite](https://nodejs.org/api/sqlite.html), [Node crypto](https://nodejs.org/docs/latest-v24.x/api/crypto.html). These support the selected primitives; this ADR does not claim an independently audited file format or completed security certification.
+
+## Alpha 4 follow-up
+
+[ADR-0010](0010-session-backup-scheduler.md) adds explicit session-unlocked scheduling and bounded rotation, while preserving this encryption/restore format. Earlier manual-only statements record the initial alpha-3 scope.

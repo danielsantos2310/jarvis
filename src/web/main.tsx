@@ -170,6 +170,8 @@ function App() {
         {snapshot && <section className="card recovery-card" aria-label="Backup and recovery"><h2>Backup & recovery</h2>
           <p>{!snapshot.recovery.configured ? 'Backups are not configured. Use the backup guide to choose a separate recovery location.' : snapshot.recovery.lastBackupAt ? `Last backup: ${timeLabel(snapshot.recovery.lastBackupAt)}` : 'Recovery location configured. Create your first encrypted backup from the terminal.'}</p>
           {snapshot.recovery.configured && snapshot.recovery.deletionSync === 'pending' && <p className="warning-panel" role="status">Backup cleanup is pending. Deleted items are hidden here, but older backups are not yet safe to restore. Reconnect the recovery drive and keep JARVIS running.</p>}
+          <p>{snapshot.automaticBackups.state === 'off' ? 'Automatic backups are off for this session.' : snapshot.automaticBackups.state === 'running' ? 'Creating and verifying an automatic backup…' : snapshot.automaticBackups.state === 'attention' ? 'Automatic backup needs attention. Check the recovery drive, free space and host clock. A retry is scheduled.' : 'Automatic daily backups are enabled for this session.'}</p>
+          {snapshot.automaticBackups.nextAttemptAt && <p>Next backup check: {timeLabel(snapshot.automaticBackups.nextAttemptAt, 'UTC')} (UTC)</p>}
           {snapshot.recovery.deletionSync === 'synced' && <p>Deletion journal synchronized. Keep this recovery location current when restoring.</p>}
         </section>}
         {!snapshot && <p role="status">Loading your workspace…</p>}

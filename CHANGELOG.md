@@ -1,5 +1,13 @@
 # Changelog
 
+## Local alpha 0.4.0-alpha.4 — 2026-09-29
+
+- Added opt-in daily backups with a terminal password held only for the running session.
+- Added bounded UTC daily/weekly retention for verified scheduler-owned files; manual and uncataloged backups remain untouched.
+- Added encrypted catalog, retry/status, overlap and shutdown handling.
+- Made live snapshots use a separate SQLite read connection and snapshot-consistent recovery metadata.
+- Windows/off-disk, clock/power-loss and full performance/security acceptance remain open.
+
 ## PC validation tooling — 2026-09-29
 
 - Added an isolated runtime, recovery-drive and loopback HTTP validation command with a shareable metadata report.

@@ -157,3 +157,6 @@ artifacts/
 *.jdel
 *.jdel.*.tmp
 restore-incomplete
+
+*.jcatalog
+*.jcatalog.*.tmp

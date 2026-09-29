@@ -1,6 +1,6 @@
 # Encrypted backup and isolated recovery
 
-Alpha 3 adds a manual, offline backup workflow for the local PC alpha. Use synthetic data until the Windows, host-encryption and personal-pilot gates are completed. This feature does not schedule backups or prove the household RPO/RTO targets.
+Alpha 3 adds a manual, offline backup workflow for the local PC alpha. Use synthetic data until the Windows, host-encryption and personal-pilot gates are completed. Alpha 4 adds [opt-in automatic backups](automatic-backups.md); this manual workflow does not prove household RPO/RTO targets.
 
 ## Configure a recovery location
 
@@ -72,9 +72,9 @@ Keep the original core stopped if adopting this restored instance. The environme
 
 Snapshots older than 28 days, or over one minute in the future, are refused by the restore command. Set the host clock correctly. The encrypted file is limited to 32 MiB and the SQLite snapshot to 16 MiB; oversized workspaces fail without replacing existing data.
 
-The design target remains seven daily plus four weekly snapshots, none older than 28 days. **Automatic scheduling, rotation and physical deletion of expired backups are not implemented.** The operator must create backups and retire expired copies; refusing restore does not erase ciphertext. Never retire the current independent deletion journal with old snapshots. Key destruction and forensic erasure are not claimed. Manual backups do not establish the ≤24-hour RPO target.
+The design target remains seven daily plus four weekly snapshots, none older than 28 days. **Manual backups remain operator-managed.** Alpha 4 can [schedule and rotate its own copies](automatic-backups.md) while explicitly unlocked and running; the operator must retire manual/uncataloged expired copies; refusing restore does not erase ciphertext. Never retire the current independent deletion journal with old snapshots. Key destruction and forensic erasure are not claimed. Manual backups do not establish the ≤24-hour RPO target.
 
-Schema 1 or 2 upgrades to schema 3 when opened. Previous alphas refuse schema 3. Restore accepts only this versioned encrypted schema-3 format; manual old-folder rollback is not a supported personal-data restore. Tests run on Linux; Windows ACL inheritance, external-drive removal, rename/power-loss durability and full clean-machine recovery remain release gates. POSIX directory metadata is fsynced; Windows cannot use that same directory-fsync mechanism.
+Schema 1 or 2 upgrades to schema 3 when opened. Alphas 1 and 2 refuse schema 3; alpha 3 and alpha 4 share this schema. Restore accepts only this versioned encrypted schema-3 format; manual old-folder rollback is not a supported personal-data restore. Tests run on Linux; Windows ACL inheritance, external-drive removal, rename/power-loss durability and full clean-machine recovery remain release gates. POSIX directory metadata is fsynced; Windows cannot use that same directory-fsync mechanism.
 
 ## Implementation and primary references
 

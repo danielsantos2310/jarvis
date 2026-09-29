@@ -24,7 +24,7 @@ function validateDatabase(path: string, expected?: { owner: string; household: s
     return owner[0];
   } finally { db.close(); }
 }
-// The CLI holds the installation runtime lock. These operations are deliberately offline.
+// The process owns the installation lock. SQLite snapshots also support the opt-in live scheduler.
 export async function createBackup(store: Store, databasePath: string, password: string, now = Date.now()) {
   syncDeletions(store.db);
   const state = recoveryState(store.db)!;
@@ -32,13 +32,21 @@ export async function createBackup(store: Store, databasePath: string, password:
   try {
     // Reserve with private permissions before SQLite opens it.
     writePrivate(staging, Buffer.alloc(0));
-    await backup(store.db, staging);
+    // A separate read connection permits live writes on the core connection.
+    const reader = new DatabaseSync(databasePath, { readOnly: true, timeout: 3000 });
+    try { await backup(reader, staging); } finally { reader.close(); }
     const owner = validateDatabase(staging);
+    const snapshot = new DatabaseSync(staging, { readOnly: true });
+    let snapshotState: RecoveryState;
+    try { snapshotState = recoveryState(snapshot)!; } finally { snapshot.close(); }
+    if (!snapshotState || snapshotState.id !== state.id || snapshotState.key !== state.key) throw new Error('BACKUP_JOURNAL_MISMATCH');
     const bytes = readBounded(staging, 16 * 1024 * 1024);
-    const payload: Payload = { version: 1, app: '0.3.0-alpha.3', node: process.versions.node, tzdb: process.versions.tz ?? 'unknown', schema: 3, createdAt: now,
-      owner: owner.id, household: owner.household, recovery: state, sha256: hash(bytes), database: bytes.toString('base64') };
+    const payload: Payload = { version: 1, app: '0.4.0-alpha.4', node: process.versions.node, tzdb: process.versions.tz ?? 'unknown', schema: 3, createdAt: now,
+      owner: owner.id, household: owner.household, recovery: snapshotState, sha256: hash(bytes), database: bytes.toString('base64') };
     const encrypted = await encryptBackup(Buffer.from(JSON.stringify(payload)), password);
     if (encrypted.length > MAX_FILE) throw new Error('RECOVERY_FILE_SIZE');
+    // Writes may have occurred while taking/encrypting the live snapshot.
+    syncDeletions(store.db);
     const destination = join(state.directory, `jarvis-${now}-${randomBytes(6).toString('hex')}.jbackup`);
     // Authenticate the exact bytes after writing, before reporting success.
     writePrivate(destination, encrypted);
