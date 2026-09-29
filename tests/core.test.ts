@@ -217,3 +217,21 @@ test('unknown future schema is refused; interpreter preserves titles as inert da
     assert('reply' in parseCommand('timer 9999 hours', Date.now(), 'UTC'));
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+test('schedule preview and creation enforce session, grant, exact preview and strict schema', async () => {
+  const f = await fixture();
+  try {
+    const schedule = { frequency: 'daily', localStart: new Date(f.now + 86_400_000).toISOString().slice(0,10) + 'T09:00',
+      timezone: 'UTC', gap: 'next-valid', overlap: 'earlier', missed: 'inbox' };
+    assert.equal((await f.request('/api/schedule-preview', schedule)).statusCode, 401);
+    await f.login();
+    assert.equal((await f.request('/api/schedule-preview', { ...schedule, identity: 'owner' })).statusCode, 400);
+    const preview = await f.request('/api/schedule-preview', schedule); assert.equal(preview.statusCode, 200, preview.body);
+    assert.equal(preview.json().occurrences.length, 3);
+    const action = { type: 'item.create', kind: 'reminder', title: 'Daily synthetic', schedule, expectedDueAt: preview.json().occurrences[0].dueAt };
+    assert.equal((await f.request('/api/actions', { requestId: randomUUID(), action: { ...action, expectedDueAt: action.expectedDueAt + 1 } })).statusCode, 409);
+    assert.equal((await f.request('/api/actions', { requestId: randomUUID(), action })).statusCode, 200);
+    assert.equal((await f.request('/api/control', { change: 'revoke', password })).statusCode, 200);
+    assert.equal((await f.request('/api/schedule-preview', schedule)).statusCode, 403);
+    assert.equal((await f.request('/api/actions', { requestId: randomUUID(), action })).statusCode, 403);
+  } finally { await f.close(); }
+});

@@ -20,7 +20,9 @@ Open **http://127.0.0.1:3000** on the same PC. First-run enrollment uses the cod
 
 [Windows / VS Code setup and recovery](docs/development/windows-quickstart.md) · [M1 scope and remaining gates](docs/milestones/001-local-alpha.md) · [Validation evidence](docs/testing/m1-slice-1.md)
 
-This slice includes authenticated local tasks, one-shot reminders, timers, a private inbox, permission controls and a synthetic presence simulator. Defined text commands work without an AI model. Voice, real sensors, cloud, external actions, recurring reminders and encrypted backup/restore are not implemented. Use synthetic examples until the personal-pilot gates are met.
+This slice includes authenticated local tasks, one-shot and daily/weekly reminders, timers, a private inbox, permission controls and a synthetic presence simulator. Defined text commands work without an AI model. Voice, real sensors, cloud, external actions and encrypted backup/restore are not implemented. Use synthetic examples until the personal-pilot gates are met.
+
+See [recurring reminder setup and clock-change choices](docs/development/recurring-reminders.md) for the second M1 slice.
 
 ## Start here
 

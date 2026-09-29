@@ -3,9 +3,14 @@ import type { FormEvent, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Action, Snapshot, Item } from '../shared/contracts.ts';
 import './styles.css';
+import { ReminderForm } from './ReminderForm.tsx';
+import type { SchedulePreview } from '../shared/schedule.ts';
 type Auth = { authenticated: boolean; setupRequired: boolean; csrf?: string; expiresAt?: number };
 const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const errors: Record<string, string> = {
+  INVALID_SCHEDULE: 'Check the local date, time zone and repeat settings.',
+  NO_SCHEDULE_OCCURRENCE: 'That time does not exist in this zone. Choose the first-valid-time policy or a different date.',
+  SCHEDULE_PREVIEW_REQUIRED: 'The schedule no longer matches its preview. Preview the times again before adding it.',
   LOGIN_FAILED: 'That password did not match. Please try again.', LOGIN_REQUIRED: 'Your session ended. Sign in again.',
   REAUTH_REQUIRED: 'Enter your current password to make this change.', ACTIONS_PAUSED: 'New actions are paused. Resume them in Controls.',
   LOCAL_GRANT_REQUIRED: 'Workspace permission is revoked. Restore it in Controls.',
@@ -118,13 +123,7 @@ function App() {
       changeAuth(value);
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
-  async function addItem(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); const form = event.currentTarget; const data = new FormData(form);
-    const title = String(data.get('title')); const due = String(data.get('due') ?? '');
-    if (due && !Number.isFinite(new Date(due).getTime())) { setError('Choose a valid due date.'); return; }
-    if (await act({ type: 'item.create', kind: due ? 'reminder' : 'task', title, timezone: zone, ...(due ? { dueAt: new Date(due).getTime() } : {}) })) form.reset();
-  }
-  function timeLabel(value: number) { return new Intl.DateTimeFormat('en-IE', { dateStyle: 'medium', timeStyle: 'short', timeZone: zone }).format(value); }
+  function timeLabel(value: number, timezone = zone) { return new Intl.DateTimeFormat('en-IE', { dateStyle: 'medium', timeStyle: 'short', timeZone: timezone }).format(value); }
   function countdown(item: Item) {
     if (!item.dueAt) return '';
     const seconds = Math.max(0, Math.ceil((item.dueAt - clock) / 1000));
@@ -171,8 +170,8 @@ function App() {
         {!snapshot && <p role="status">Loading your workspace…</p>}
         {snapshot && !snapshot.grant && <p className="warning-panel">Workspace permission is revoked. Private items are excluded from server responses. <button onClick={() => setControls(true)}>Manage permission</button></p>}
         <div className="content-grid"><div className="left-column"><WidgetBoundary title="Tasks and reminders"><section id="tasks" className="card"><div className="card-heading"><h2>Tasks & reminders <span className="count">{snapshot?.grant ? tasks.length : '—'}</span></h2><button className="quiet" onClick={() => setHideTasks(!hideTasks)}>{hideTasks ? 'Show' : 'Hide'}</button></div>
-          {!hideTasks && <><form className="task-form" onSubmit={addItem}><label className="sr-only" htmlFor="task-title">Task title</label><input id="task-title" name="title" placeholder="What would you like to remember?" required maxLength={160}/><button className="primary" disabled={busy || !online || !snapshot?.grant || snapshot.paused}>Add<Icon kind="plus"/></button><label className="date-label">Optional reminder time<input name="due" type="datetime-local"/></label></form>
-            <div className="items">{tasks.length === 0 ? <div className="empty"><span className="empty-icon"><Icon kind="task"/></span><h3>A clear space.</h3><p>Add a task above, or ask JARVIS to remember something.</p></div> : tasks.map(item => <div className={`item ${item.state === 'done' ? 'done' : ''}`} key={item.id}><button className="check" disabled={busy || item.state === 'done' || !online} aria-label={`Complete ${item.title}`} onClick={() => void act({ type: 'item.complete', id: item.id })}>{item.state === 'done' ? '✓' : ''}</button><div><strong>{item.title}</strong><small>{item.dueAt ? timeLabel(item.dueAt) : 'Local task'} · {item.state === 'done' ? 'Completed' : 'Active'}</small></div><button className="delete quiet" aria-label={`Delete ${item.title}`} disabled={busy || !online} onClick={() => void act({ type: 'item.delete', id: item.id })}>×</button></div>)}</div><p className="card-footer">SOURCE: YOUR LOCAL WORKSPACE</p></>}
+          {!hideTasks && <><ReminderForm disabled={busy || !online || !snapshot?.grant || snapshot.paused} create={act} preview={schedule => api<SchedulePreview>('schedule-preview', schedule)}/>
+            <div className="items">{tasks.length === 0 ? <div className="empty"><span className="empty-icon"><Icon kind="task"/></span><h3>A clear space.</h3><p>Add a task above, or ask JARVIS to remember something.</p></div> : tasks.map(item => <div className={`item ${item.state === 'done' ? 'done' : ''}`} key={item.id}><button className="check" disabled={busy || item.state === 'done' || !online} aria-label={`${item.schedule && item.schedule.frequency !== 'once' ? 'Stop repeating' : 'Complete'} ${item.title}`} onClick={() => void act({ type: 'item.complete', id: item.id })}>{item.state === 'done' ? '✓' : ''}</button><div><strong>{item.title}</strong><small>{item.dueAt ? `${timeLabel(item.dueAt, item.timezone)} ${item.timezone}` : 'Local task'} · {item.state === 'done' ? 'Completed' : 'Active'}{item.schedule && item.schedule.frequency !== 'once' && ` · ${item.schedule.frequency}`}</small></div><button className="delete quiet" aria-label={`Delete ${item.title}`} disabled={busy || !online} onClick={() => void act({ type: 'item.delete', id: item.id })}>×</button></div>)}</div><p className="card-footer">SOURCE: YOUR LOCAL WORKSPACE</p></>}
         </section></WidgetBoundary>
         <WidgetBoundary title="Reminder inbox"><section className="card inbox"><div className="card-heading"><h2>Reminder inbox</h2><span className="tag">PRIVATE</span></div>{snapshot?.notices.length ? snapshot.notices.map(n => <div className="notice" key={n.id}><div><strong>{n.title}</strong><small>{n.late ? 'Missed while unavailable · ' : 'Due · '}{timeLabel(n.dueAt)}</small></div><button className="quiet" disabled={busy || !online} onClick={() => void act({ type: 'notice.dismiss', id: n.id })} aria-label={`Dismiss ${n.title}`}>Dismiss</button></div>) : <p className="muted">You’re all caught up. Due reminders appear here.</p>}<p className="fineprint">Silent inbox delivery. This alpha cannot alert you while the core is stopped or the PC is asleep.</p></section></WidgetBoundary>
         </div><div className="right-column"><WidgetBoundary title="Timers"><section id="timers" className="card"><div className="card-heading"><h2>Make a little time.</h2><Icon kind="clock"/></div><p className="muted">A moment to focus, or a moment to pause.</p><div className="timer-presets">{[5, 15, 25].map(n => <button disabled={busy || !online || !snapshot?.grant || snapshot.paused} key={n} onClick={() => void send(`timer ${n} minutes`)}>{n}<span>MIN</span></button>)}</div>

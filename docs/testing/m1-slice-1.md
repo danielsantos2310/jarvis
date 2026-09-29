@@ -1,5 +1,7 @@
 # M1 slice 1 — verification report
 
+Historical first-slice evidence. [Slice 2](m1-slice-2.md) records recurring reminders, schema 2 and the current verification results.
+
 Date: 2026-09-28. Scope: local, single-owner PC evaluation alpha. Dataset: synthetic tasks and credentials only. Full Milestone 1 and a personal/home pilot are **not accepted** by this report.
 
 ## Environment

@@ -1,6 +1,6 @@
 # Milestone 1 — Local PC alpha
 
-Status: **first implementation slice prepared for review; full M1 acceptance remains open**.
+Status: **implementation slices 1 and 2 prepared for review; full M1 acceptance remains open**.
 Date: 2026-09-28. Baseline: merged [PR #1](https://github.com/danielsantos2310/jarvis/pull/1), commit `d479389241f32c650b6787faa30a5ac59ec9df20`.
 
 Daniel's subsequent instruction, “ok lets go to next step in the project,” authorizes progressing from documentation to the next implementation step. This change implements the roadmap's first reversible local slice. It does not record owner sign-off on all six proposed ADRs or claim the complete M1 release gate has passed.
@@ -8,7 +8,7 @@ Daniel's subsequent instruction, “ok lets go to next step in the project,” a
 ## What you can try
 
 1. Enroll from a code shown only in the local terminal, choose a password, and open a private dashboard.
-2. Create, complete and delete local tasks; create one-shot reminders; run durable timers through forms or defined text commands.
+2. Create, complete and delete local tasks; create one-shot or daily/weekly reminders; run durable timers through forms or defined text commands.
 3. Inspect current service state, a private due-reminder inbox, redacted action metadata and an explicitly synthetic room-presence adapter.
 4. Pause new actions and delivery, revoke workspace access, restore it with password confirmation, and lock the dashboard.
 
@@ -22,10 +22,14 @@ Start with the [Windows / VS Code quickstart](../development/windows-quickstart.
 | D-02 first workflows | Implementer selected the bounded workflows above from M1's planned scope. | Daniel's usability review; no weekly capacity assumed |
 | D-03 stack | TypeScript, Fastify, React/Vite, SQLite; [ADR-0007](../adr/0007-m1-local-alpha.md) records why Vite and npm were selected. | Owner review; earlier ADRs remain Proposed |
 | D-04 authentication | First-run terminal enrollment; `@fastify/session`; scrypt password storage; offline terminal recovery. | Windows recovery UX and independent security review before personal pilot |
-| D-06 time/privacy | Use browser-reported IANA timezone for explicit one-shot dates; store UTC instant and timezone. No unsolicited suggestions or audio. | Recurrence/DST policy UI and real reminder setup acceptance |
+| D-06 time/privacy | Use browser-reported IANA timezone for explicit one-shot dates; store UTC instant and timezone. No unsolicited suggestions or audio. | Recurrence/DST UI implemented in slice 2; real reminder setup acceptance pending |
 | D-12 backups | Restart persistence and credential recovery implemented; no personal backup/restore interface. | Encrypted snapshots, independent deletion journal and restore drill before personal pilot |
 
 The planned future hub remains the user's Alienware Alpha R1 (i5-4590T, GTX 860M-derived 2 GB GPU, 8 GB DDR3L, 1 TB HDD), as described in prior project context. These are supplied specifications, not verified inventory. No performance claim or upgrade purchase follows from them.
+
+## Slice 2 update — 2026-09-29
+
+[Recurring reminders](../development/recurring-reminders.md) now implement daily/weekly schedules, explicit clock-gap/overlap previews and missed-delivery choices. [ADR-0008](../adr/0008-local-recurring-reminders.md) and [slice-2 evidence](../testing/m1-slice-2.md) describe the schema-2 migration and limits. This completes the bounded M1-03 implementation; owner/Windows acceptance and the full milestone remain open.
 
 ## Contracts and boundaries
 
@@ -47,7 +51,7 @@ One SQLite database contains owner/auth metadata, items, notices, settings, idem
 
 Titles persist until deleted. Notices reference live items and expire after seven days. Audit/receipts expire after 30 days, tombstones after 35 days for this no-backup alpha. Transactions and foreign keys remove linked notices. **Tombstones in this database are not an independent backup deletion journal. Personal backup restoration is not supported yet.**
 
-Limits: 4 KiB request body; 500-character command; 160-character title; 1,000 items; 20,000 receipts; 50,000 audit rows; 100 sessions; global/request-specific rate limits. Password derivation is serialized to cap memory use. Schema 1 is migrated transactionally on first open; a newer schema is refused. The local runtime lock prevents two normal launch/recovery processes from using the same data directory concurrently. A stale lock requires operator inspection after a crash.
+Limits: 4 KiB request body; 500-character command; 160-character title; 1,000 items; 20,000 receipts; 50,000 audit rows; 100 sessions; global/request-specific rate limits. Password derivation is serialized to cap memory use. Schema 1 upgrades transactionally to schema 2 on open; a newer schema is refused. The local runtime lock prevents two normal launch/recovery processes from using the same data directory concurrently. A stale lock requires operator inspection after a crash.
 
 Database content is not application-encrypted. Linux directory/file permissions are restricted; Windows uses the current account's inherited permissions. Host encryption, account protection, off-disk encrypted backups and deletion replay are prerequisites for a personal/home pilot. Start with synthetic examples on the work PC.
 
@@ -58,7 +62,7 @@ See the [test report](../testing/m1-slice-1.md) for exact executed results and l
 | ID | Next bounded work | Gate / evidence |
 | --- | --- | --- |
 | M1-02 | Run this slice on Daniel's Windows PC, record inventory and recovery UX | Local login, create/restart, Ctrl+C/restart, password recovery; real OS evidence |
-| M1-03 | Add recurrence and an explicit DST ambiguity preview | T-13 full skip/repeat/missed-policy coverage |
+| M1-03 | Daily/weekly recurrence and explicit DST preview implemented | Synthetic tests and browser evidence in slice 2; Windows/owner review pending |
 | M1-04 | Implement encrypted backup and independent deletion replay | T-26 and recovery smoke; no revival of deleted content |
 | M1-05 | Replace one-second polling with authorized live updates if needed | T-09/T-30, measured end-to-end p95 and resource budget |
 | M1-06 | Validate host network denial, disk-full/quota behavior, accessibility and release environment | T-01/T-24/T-33/T-35/T-36; remaining M1 release gates |

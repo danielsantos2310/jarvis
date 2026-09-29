@@ -1,5 +1,7 @@
 # ADR-0007: Bounded implementation of the first PC alpha
 
+Follow-up: [ADR-0008](0008-local-recurring-reminders.md) adds the calendar recurrence previously deferred here. This record preserves the first-slice decision.
+
 - Status: Implemented for evaluation; owner acceptance pending
 - Date: 2026-09-28
 - Decision owner: Daniel; implementation choices supplied for review

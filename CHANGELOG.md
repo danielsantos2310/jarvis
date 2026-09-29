@@ -1,5 +1,12 @@
 # Changelog
 
+## Local alpha 0.2.0-alpha.2 — 2026-09-29
+
+- Added daily/weekly reminders with server-resolved previews, explicit DST gap/overlap choices and missed-delivery policies.
+- Preserved original local-time intent across transitions; consolidated missed occurrences and protected new notices from stale dismissals.
+- Added transactional schema 1 → 2 migration, recurrence regression tests and browser coverage.
+- Windows validation, encrypted backup/deletion replay and remaining M1 release gates stay open.
+
 ## Local alpha 0.2.0-alpha.1 — 2026-09-28
 
 - Added the first M1 slice: Fastify/TypeScript core, React/Vite dashboard and SQLite persistence.

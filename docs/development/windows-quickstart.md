@@ -1,6 +1,6 @@
 # Run the JARVIS local alpha on Windows / VS Code
 
-This is the first M1 evaluation slice. Use synthetic tasks initially. It runs on the work PC; the Alienware server, Docker, Python and AI models are not needed yet.
+This is the M1 evaluation alpha (slices 1 and 2). Use synthetic tasks initially. It runs on the work PC; the Alienware server, Docker, Python and AI models are not needed yet.
 
 ## 1. Get this branch
 
@@ -46,7 +46,7 @@ timer 5 minutes
 help
 ```
 
-You can also add items directly in the task form. An optional date makes it a one-shot reminder. The date is interpreted in the browser's displayed timezone, then stored as a UTC instant with the zone. Recurring reminders and an explicit DST ambiguity chooser are not implemented yet.
+You can also add items directly in the task form. An optional date opens reminder settings. Choose once, every day or every week; confirm the time zone and clock-change/missed-delivery policies. Select **Preview reminder times**, inspect the local dates and UTC offsets, then select **Add**. See the [recurring reminder guide](recurring-reminders.md), including schema-2 upgrade/rollback instructions.
 
 - Complete/delete tasks, cancel timers and dismiss due inbox entries with the corresponding controls.
 - Pause new actions and reminder delivery in **Controls**. Resume requires your password.

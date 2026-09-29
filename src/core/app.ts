@@ -11,6 +11,9 @@ import { resolve } from 'node:path';
 import { Store } from './database.ts';
 import type { Owner } from './database.ts';
 import { AppError, BoundedSessions, equalSecret, hashPassword, verifyPassword, validTimezone } from './security.ts';
+import { previewSchedule } from './scheduling.ts';
+import { scheduleSchema } from '../shared/schedule.ts';
+import type { Schedule } from '../shared/schedule.ts';
 import { parseCommand } from './commands.ts';
 import { actionRequestSchema, commandRequestSchema } from '../shared/contracts.ts';
 import type { Action, Snapshot } from '../shared/contracts.ts';
@@ -50,7 +53,7 @@ export async function createApp(options: AppOptions) {
     cookie: { httpOnly: true, sameSite: 'strict', secure: false, path: '/api', maxAge: 30 * 60_000 },
     saveUninitialized: false, rolling: false, store: new BoundedSessions(),
   });
-  await app.register(swagger, { openapi: { info: { title: 'JARVIS local alpha API', version: '0.2.0-alpha.1' } } });
+  await app.register(swagger, { openapi: { info: { title: 'JARVIS local alpha API', version: '0.2.0-alpha.2' } } });
   const anonymous = new Set(['/api/session', '/api/enroll', '/api/login', '/api/public']);
   app.addHook('preHandler', async req => {
     const path = req.url.split('?')[0];
@@ -127,6 +130,14 @@ export async function createApp(options: AppOptions) {
     try { return store.action(owner, requestId, action, now(), intent); }
     catch (error) { store.audit(owner.id, 'action', 'denied', now()); throw error; }
   }
+  app.post<{ Body: Schedule }>('/api/schedule-preview', {
+    schema: { body: scheduleSchema }, config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
+  }, async req => {
+    if (!store.canRead(req.actor!)) throw new AppError(403, 'LOCAL_GRANT_REQUIRED');
+    const occurrences = previewSchedule(req.body);
+    if (occurrences[0].dueAt < now() + 500 || occurrences[0].dueAt > now() + 365 * 86_400_000) throw new AppError(400, 'DUE_TIME_RANGE');
+    return { occurrences, timezone: req.body.timezone, tzdb: process.versions.tz ?? 'runtime' };
+  });
   app.post<{ Body: { requestId: string; action: Action } }>('/api/actions', { schema: { body: actionRequestSchema } },
     async req => execute(req.actor!, req.body.requestId, req.body.action));
   app.post<{ Body: { requestId: string; text: string; timezone: string } }>('/api/commands', { schema: { body: commandRequestSchema } }, async req => {

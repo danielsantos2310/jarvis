@@ -1,7 +1,9 @@
+import type { Schedule } from './schedule.ts';
+import { scheduleSchema } from './schedule.ts';
 export type ItemKind = 'task' | 'reminder' | 'timer';
 export interface Item {
   id: string; kind: ItemKind; title: string; dueAt: number | null;
-  timezone: string; createdAt: number; state: 'active' | 'done';
+  timezone: string; schedule: Schedule | null; createdAt: number; state: 'active' | 'done';
 }
 export interface Notice { id: string; itemId: string; title: string; kind: ItemKind; dueAt: number; late: boolean }
 export interface Snapshot {
@@ -11,7 +13,7 @@ export interface Snapshot {
   audit: { action: string; decision: string; at: number }[];
 }
 export type Action =
-  | { type: 'item.create'; kind: ItemKind; title: string; dueAt?: number; timezone?: string }
+  | { type: 'item.create'; kind: ItemKind; title: string; dueAt?: number; timezone?: string; schedule?: Schedule; expectedDueAt?: number }
   | { type: 'item.complete' | 'item.delete' | 'notice.dismiss'; id: string };
 export type Command = { action: Action } | { reply: string };
 const text = { type: 'string', minLength: 1, maxLength: 160, pattern: '\\S' } as const;
@@ -20,6 +22,7 @@ export const actionSchema = {
   oneOf: [
     { type: 'object', additionalProperties: false, required: ['type', 'kind', 'title'], properties: {
       type: { const: 'item.create' }, kind: { enum: ['task', 'reminder', 'timer'] }, title: text,
+      schedule: scheduleSchema, expectedDueAt: { type: 'integer', minimum: 0 },
       dueAt: { type: 'integer', minimum: 0 }, timezone: { type: 'string', minLength: 1, maxLength: 80 },
     } },
     { type: 'object', additionalProperties: false, required: ['type', 'id'], properties: {
