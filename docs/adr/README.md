@@ -24,3 +24,5 @@ Future ADRs should cover cloud provider selection, native desktop capabilities, 
 [ADR-0007: first local PC alpha](0007-m1-local-alpha.md) records selected implementation choices and their limits. Implemented for evaluation; owner acceptance pending. Earlier proposed ADRs are not silently marked accepted.
 
 [ADR-0008: local recurring reminders](0008-local-recurring-reminders.md) records the calendar and missed-delivery policies, preview contract and schema-2 migration. Implemented for evaluation; owner acceptance pending.
+
+[ADR-0009: encrypted recovery](0009-encrypted-recovery.md) records manual authenticated snapshots, independent deletion synchronization and isolated restore. Implemented for evaluation; owner acceptance pending.

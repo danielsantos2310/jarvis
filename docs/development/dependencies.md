@@ -21,3 +21,7 @@ Updated 2026-09-29 for alpha.2. Exact transitive versions and integrity hashes: 
 | vite | 7.3.6 | MIT | development |
 
 No models, voices or third-party image/font assets are bundled. Browser QA uses separately provisioned synthetic test infrastructure. Review advisories and licenses again before distribution or changing the lockfile.
+
+## Alpha 3 recovery
+
+No new package dependency. Uses pinned Node 24 native `node:sqlite` backup and `node:crypto` AES-256-GCM/scrypt. The versioned format, local key custody and limitations are described in [ADR-0009](../adr/0009-encrypted-recovery.md).

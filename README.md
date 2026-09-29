@@ -2,7 +2,7 @@
 
 Local-first proactive AI assistant with voice, presence awareness, smart-home integration, context, memory and modular widgets.
 
-**Current stage: Milestone 1 — first local PC alpha implementation, ready for review. The full milestone is not yet accepted.**
+**Current stage: Milestone 1 — local PC alpha with recurring reminders and encrypted recovery, ready for review. The full milestone is not yet accepted.**
 
 JARVIS starts on one PC and is designed to grow into a private, multi-room home assistant. It should be useful offline, understand when to stay quiet, and keep every action inside permissions controlled by the user.
 
@@ -20,9 +20,9 @@ Open **http://127.0.0.1:3000** on the same PC. First-run enrollment uses the cod
 
 [Windows / VS Code setup and recovery](docs/development/windows-quickstart.md) · [M1 scope and remaining gates](docs/milestones/001-local-alpha.md) · [Validation evidence](docs/testing/m1-slice-1.md)
 
-This slice includes authenticated local tasks, one-shot and daily/weekly reminders, timers, a private inbox, permission controls and a synthetic presence simulator. Defined text commands work without an AI model. Voice, real sensors, cloud, external actions and encrypted backup/restore are not implemented. Use synthetic examples until the personal-pilot gates are met.
+This slice includes authenticated local tasks, one-shot and daily/weekly reminders, timers, a private inbox, permission controls and a synthetic presence simulator. Defined text commands work without an AI model. Voice, real sensors, cloud and external actions are not implemented. Manual encrypted backups and isolated restoration with deletion replay are available. Use synthetic examples until the personal-pilot gates are met.
 
-See [recurring reminder setup and clock-change choices](docs/development/recurring-reminders.md) for the second M1 slice.
+See [recurring reminder setup and clock-change choices](docs/development/recurring-reminders.md) for the second M1 slice. See [encrypted backup and recovery](docs/development/backup-recovery.md) and [slice-3 validation](docs/testing/m1-slice-3.md) for the third slice.
 
 ## Start here
 

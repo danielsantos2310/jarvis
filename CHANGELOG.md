@@ -1,5 +1,13 @@
 # Changelog
 
+## Local alpha 0.3.0-alpha.3 — 2026-09-29
+
+- Added manual encrypted snapshots and isolated restore through hidden-password terminal commands.
+- Added independent encrypted deletion synchronization, retry and dashboard pending-cleanup status.
+- Restored workspaces get a new password, revoked permission and paused actions; old deleted records are purged before access.
+- Added schema-3 migration, integrity/authentication/failure tests and Windows recovery instructions.
+- Automatic scheduling/rotation, actual Windows recovery and remaining M1 release gates remain open.
+
 ## Local alpha 0.2.0-alpha.2 — 2026-09-29
 
 - Added daily/weekly reminders with server-resolved previews, explicit DST gap/overlap choices and missed-delivery policies.

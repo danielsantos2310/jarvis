@@ -53,7 +53,7 @@ export async function createApp(options: AppOptions) {
     cookie: { httpOnly: true, sameSite: 'strict', secure: false, path: '/api', maxAge: 30 * 60_000 },
     saveUninitialized: false, rolling: false, store: new BoundedSessions(),
   });
-  await app.register(swagger, { openapi: { info: { title: 'JARVIS local alpha API', version: '0.2.0-alpha.2' } } });
+  await app.register(swagger, { openapi: { info: { title: 'JARVIS local alpha API', version: '0.3.0-alpha.3' } } });
   const anonymous = new Set(['/api/session', '/api/enroll', '/api/login', '/api/public']);
   app.addHook('preHandler', async req => {
     const path = req.url.split('?')[0];
@@ -121,7 +121,7 @@ export async function createApp(options: AppOptions) {
     if (!schedulerHealthy) throw new AppError(503, 'SCHEDULER_UNAVAILABLE');
     const owner = req.actor!;
     if (presence.expiresAt !== null && presence.expiresAt <= now()) presence = { state: 'unknown', synthetic: true, expiresAt: null };
-    return { now: now(), paused: store.paused(), grant: store.canRead(owner), items: store.list(owner), notices: store.notices(owner), presence,
+    return { recovery: store.recoveryStatus(), now: now(), paused: store.paused(), grant: store.canRead(owner), items: store.list(owner), notices: store.notices(owner), presence,
       services: { core: 'ready', storage: 'ready', voice: 'not-installed', model: 'not-installed', cloud: 'disabled' },
       audit: store.db.prepare('SELECT action,decision,at FROM audit WHERE owner=? ORDER BY id DESC LIMIT 8').all(owner.id) as unknown as Snapshot['audit'],
     } satisfies Snapshot;

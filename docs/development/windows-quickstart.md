@@ -96,6 +96,10 @@ The browser test provisions its own temporary synthetic workspace and cleans it 
 
 ## Before using personal household data
 
-This slice is not a completed home deployment. Confirm Windows account permissions and disk encryption, complete the PC inventory, and implement/test encrypted backups with deletion replay. The SQLite data itself is not application-encrypted. No restore procedure should publish old personal data before the independent deletion journal exists. See [remaining M1 gates](../milestones/001-local-alpha.md).
+This slice is not a completed home deployment. Confirm Windows account permissions and disk encryption, complete the PC inventory, and perform the [encrypted backup and recovery drill](backup-recovery.md) on the actual Windows PC. The SQLite data itself is not application-encrypted. Use the current independent deletion journal for every restore; keep personal data offline if cleanup is pending or journal freshness is uncertain. See [remaining M1 gates](../milestones/001-local-alpha.md).
 
 Official technical references: [Node downloads](https://nodejs.org/en/download), [npm ci](https://docs.npmjs.com/cli/v11/commands/npm-ci), [VS Code terminal basics](https://code.visualstudio.com/docs/terminal/basics), [Playwright browser installation](https://playwright.dev/docs/browsers).
+
+## Encrypted backups (alpha 3)
+
+Stop JARVIS, then follow [backup and recovery](backup-recovery.md). Commands configure a separate recovery location, create password-encrypted snapshots and restore to a new folder. Restoration uses a new workspace password, pauses actions and revokes workspace permission. This upgrades storage to schema 3; earlier alphas cannot open it. Windows execution and power-loss/removable-drive behavior still need validation.

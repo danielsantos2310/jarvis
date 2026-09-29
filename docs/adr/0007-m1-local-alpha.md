@@ -46,3 +46,7 @@ Primary references consulted 2026-09-28:
 - [SQLite appropriate uses](https://www.sqlite.org/whentouse.html): one local authority.
 
 These support implementation mechanisms; they do not establish that JARVIS has passed independent security review.
+
+## Alpha 3 follow-up
+
+[ADR-0009](0009-encrypted-recovery.md) adds manual encrypted recovery and independent deletion replay. Earlier no-backup statements describe the initial slice; live SQLite still relies on host encryption and personal-pilot acceptance remains open.
