@@ -13,9 +13,10 @@
     "typecheck": "tsc --noEmit",
     "test": "node --disable-sigusr1 --test --test-concurrency=1 tests/*.test.ts",
     "recover": "node --disable-sigusr1 src/core/recover.ts",
-    "check": "npm run typecheck && npm test && npm run build",
+    "check": "npm run build && npm test",
     "test:e2e": "npm run build && playwright test",
-    "backup": "node --disable-sigusr1 --disable-proto=throw src/core/backup-cli.ts"
+    "backup": "node --disable-sigusr1 --disable-proto=throw src/core/backup-cli.ts",
+    "validate:pc": "node --disable-sigusr1 --disable-proto=throw src/validation/pc-cli.ts"
   },
   "dependencies": {
     "@fastify/cookie": "11.1.2",

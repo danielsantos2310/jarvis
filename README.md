@@ -24,6 +24,10 @@ This slice includes authenticated local tasks, one-shot and daily/weekly reminde
 
 See [recurring reminder setup and clock-change choices](docs/development/recurring-reminders.md) for the second M1 slice. See [encrypted backup and recovery](docs/development/backup-recovery.md) and [slice-3 validation](docs/testing/m1-slice-3.md) for the third slice.
 
+## Validate your PC
+
+After building, run `npm run validate:pc -- --recovery-dir "E:\JARVIS-Recovery"` with an existing local directory on your chosen drive. It uses temporary synthetic data and writes a results report without opening your real workspace. See the [Windows PC validation guide](docs/development/pc-validation.md).
+
 ## Start here
 
 1. [JARVIS MASTER PROJECT SPECIFICATION v0.1](docs/MASTER_PROJECT_SPECIFICATION_v0.1.md)

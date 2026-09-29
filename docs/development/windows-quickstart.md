@@ -103,3 +103,7 @@ Official technical references: [Node downloads](https://nodejs.org/en/download),
 ## Encrypted backups (alpha 3)
 
 Stop JARVIS, then follow [backup and recovery](backup-recovery.md). Commands configure a separate recovery location, create password-encrypted snapshots and restore to a new folder. Restoration uses a new workspace password, pauses actions and revokes workspace permission. This upgrades storage to schema 3; earlier alphas cannot open it. Windows execution and power-loss/removable-drive behavior still need validation.
+
+## Collect PC validation evidence
+
+Use the [PC validation command](pc-validation.md) to generate an actual Windows runtime/recovery report using isolated synthetic records. The automatic drill supplements the manual browser, hidden-password and removable-drive checks; it does not replace them.

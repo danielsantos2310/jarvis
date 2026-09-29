@@ -65,7 +65,7 @@ See the [slice-1](../testing/m1-slice-1.md), [slice-2](../testing/m1-slice-2.md)
 
 | ID | Next bounded work | Gate / evidence |
 | --- | --- | --- |
-| M1-02 | Run this slice on Daniel's Windows PC, record inventory and recovery UX | Local login, create/restart, Ctrl+C/restart, password recovery; real OS evidence |
+| M1-02 | [PC validation runner](../development/pc-validation.md) implemented; execute on Daniel's Windows PC and record inventory/recovery UX | Runner verified on Linux; actual Windows report, Ctrl+C/restart, browser and human password recovery remain pending |
 | M1-03 | Daily/weekly recurrence and explicit DST preview implemented | Synthetic tests and browser evidence in slice 2; Windows/owner review pending |
 | M1-04 | Manual encrypted backup and independent deletion replay implemented | T-26 and isolated recovery smoke in slice 3; Windows/off-disk drill, retention automation and acceptance pending |
 | M1-05 | Replace one-second polling with authorized live updates if needed | T-09/T-30, measured end-to-end p95 and resource budget |

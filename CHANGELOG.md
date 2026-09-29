@@ -1,5 +1,11 @@
 # Changelog
 
+## PC validation tooling — 2026-09-29
+
+- Added an isolated runtime, recovery-drive and loopback HTTP validation command with a shareable metadata report.
+- Added checks that preserve existing workspace/recovery files and leave no synthetic data after ordinary completion.
+- Added Windows run instructions and explicit remaining manual gates; Linux evidence is not counted as Windows acceptance.
+
 ## Local alpha 0.3.0-alpha.3 — 2026-09-29
 
 - Added manual encrypted snapshots and isolated restore through hidden-password terminal commands.
