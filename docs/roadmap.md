@@ -2,6 +2,8 @@
 
 Version 0.1 · Gate-based sequence; no committed delivery dates.
 
+Progress 2026-09-28: M0 documentation is merged. [M1 slice 1](milestones/001-local-alpha.md) implements the first PC workflow for evaluation; full M1 acceptance remains open.
+
 Build a useful secure local slice before broad integration. Permissions, privacy and failure behavior are part of every milestone, not a final hardening phase. Work below is planned, not authorized implementation in this documentation-only task.
 
 | Milestone | Scope / deliverable | Dependencies | Exit gate |

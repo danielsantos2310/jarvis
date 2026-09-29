@@ -2,9 +2,27 @@
 
 Local-first proactive AI assistant with voice, presence awareness, smart-home integration, context, memory and modular widgets.
 
-**Current stage: Milestone 0 — documentation and architecture. No application has been implemented.**
+**Current stage: Milestone 1 — first local PC alpha implementation, ready for review. The full milestone is not yet accepted.**
 
 JARVIS starts on one PC and is designed to grow into a private, multi-room home assistant. It should be useful offline, understand when to stay quiet, and keep every action inside permissions controlled by the user.
+
+## Run the local alpha
+
+Use Node.js 24.19.0 or a compatible supported Node 24 patch. In the repository folder:
+
+```powershell
+npm ci
+npm run build
+npm start
+```
+
+Open **http://127.0.0.1:3000** on the same PC. First-run enrollment uses the code printed in your terminal. Create a password, then try `add task Review JARVIS`, `timer 5 minutes` or `remind me in 1 minute to stretch`.
+
+[Windows / VS Code setup and recovery](docs/development/windows-quickstart.md) · [M1 scope and remaining gates](docs/milestones/001-local-alpha.md) · [Validation evidence](docs/testing/m1-slice-1.md)
+
+This slice includes authenticated local tasks, one-shot and daily/weekly reminders, timers, a private inbox, permission controls and a synthetic presence simulator. Defined text commands work without an AI model. Voice, real sensors, cloud, external actions and encrypted backup/restore are not implemented. Use synthetic examples until the personal-pilot gates are met.
+
+See [recurring reminder setup and clock-change choices](docs/development/recurring-reminders.md) for the second M1 slice.
 
 ## Start here
 
@@ -36,7 +54,7 @@ JARVIS starts on one PC and is designed to grow into a private, multi-room home 
 
 ## Scope of this version
 
-This is a proposed engineering baseline for review. User requirements are distinguished from proposed implementation choices. Hardware, exact dependency versions, model selection and delivery dates remain subject to the documented gates. There are no setup commands because there is no runnable software yet.
+The master specification preserves the M0 design baseline. The M1 implementation is a bounded evaluation slice, recorded in ADR-0007; it does not imply owner acceptance of every proposed ADR. Exact application dependencies are locked. Hardware, speech/model choices, release acceptance and personal-pilot recovery remain gated.
 
 Repository: [danielsantos2310/jarvis](https://github.com/danielsantos2310/jarvis).
 

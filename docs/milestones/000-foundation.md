@@ -1,5 +1,7 @@
 # Milestone 0 — Foundation and specification
 
+**Progress update, 2026-09-28:** [PR #1](https://github.com/danielsantos2310/jarvis/pull/1) was merged on 2026-09-16. Daniel subsequently requested the next project step. [M1 slice 1](001-local-alpha.md) records the bounded implementation scope, selected choices and unresolved acceptance gates. The original review record below is retained as the historical documentation-task status, not current implementation authorization.
+
 Version 0.1 · Status: **documentation prepared; owner acceptance and implementation-readiness decisions pending**.
 
 ## Goal and boundary
