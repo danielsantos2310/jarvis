@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { randomBytes, randomUUID, createHmac } from 'node:crypto';
 import type { Action, Item, Notice } from '../shared/contracts.ts';
 import { previewSchedule, scheduleWindow, MISSED_GRACE_MS } from './scheduling.ts';
+import { recoveryState, syncDeletions } from './deletion-journal.ts';
 import type { Schedule } from '../shared/schedule.ts';
 import { AppError, validTimezone } from './security.ts';
 export interface Owner { id: string; household: string; password: string; epoch: number; grant_enabled: number }
@@ -12,7 +13,7 @@ export class Store {
     this.db = new DatabaseSync(path, { timeout: 3000 });
     this.db.exec('PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA secure_delete=ON;');
     const version = (this.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version;
-    if (version > 2) { this.db.close(); throw new Error('DATABASE_VERSION_TOO_NEW'); }
+    if (version > 3) { this.db.close(); throw new Error('DATABASE_VERSION_TOO_NEW'); }
     if (!version) this.db.exec(`BEGIN IMMEDIATE;
       CREATE TABLE owner (singleton INTEGER PRIMARY KEY CHECK(singleton=1), id TEXT UNIQUE NOT NULL, household TEXT NOT NULL,
         password TEXT NOT NULL, epoch INTEGER NOT NULL DEFAULT 1, grant_enabled INTEGER NOT NULL CHECK(grant_enabled IN (0,1)));
@@ -35,7 +36,19 @@ export class Store {
       ALTER TABLE items ADD COLUMN schedule_index INTEGER NOT NULL DEFAULT 0;
       PRAGMA user_version=2;
       COMMIT;`);
+    if (version < 3) this.db.exec(`BEGIN IMMEDIATE;
+      CREATE TABLE recovery (singleton INTEGER PRIMARY KEY CHECK(singleton=1), id TEXT NOT NULL, key TEXT NOT NULL, directory TEXT NOT NULL, revision INTEGER NOT NULL, last_backup INTEGER);
+      PRAGMA user_version=3; COMMIT;`);
     this.db.prepare('INSERT OR IGNORE INTO settings VALUES(1,0,?)').run(randomBytes(32).toString('hex'));
+  }
+  deletionSync: 'synced' | 'pending' = 'pending';
+  private lastSync = -Infinity;
+  syncRecovery() {
+    try { syncDeletions(this.db); this.deletionSync = 'synced'; } catch { this.deletionSync = 'pending'; }
+  }
+  recoveryStatus() {
+    const state = recoveryState(this.db);
+    return { configured: !!state, deletionSync: state ? this.deletionSync : 'not-configured' as const, lastBackupAt: state?.last_backup ?? null };
   }
   close() { this.db.close(); }
   transaction<T>(fn: () => T): T {
@@ -87,7 +100,7 @@ export class Store {
     return rows.map(r => ({ id: r.id, itemId: r.item_id, title: r.title, kind: r.kind, dueAt: r.due_at, late: !!r.late }));
   }
   action(owner: Owner, requestId: string, action: Action, now: number, intent?: string) {
-    return this.transaction(() => {
+    const outcome = this.transaction(() => {
       // Identity and grant are rechecked inside the write transaction.
       const current = this.owner();
       if (!current || current.id !== owner.id || current.household !== owner.household || current.epoch !== owner.epoch || !current.grant_enabled)
@@ -144,13 +157,16 @@ export class Store {
       this.audit(owner.id, action.type, 'allowed', now);
       return result;
     });
+    if (action.type === 'item.delete') this.syncRecovery();
+    return outcome;
   }
   tick(now: number) {
+    if (now - this.lastSync >= 10000 || now < this.lastSync) { this.syncRecovery(); this.lastSync = now; }
     this.transaction(() => {
       this.db.prepare('DELETE FROM audit WHERE at<?').run(now - 30 * 86_400_000);
       this.db.prepare('DELETE FROM receipts WHERE at<?').run(now - 30 * 86_400_000);
       this.db.prepare('DELETE FROM notices WHERE delivered_at<?').run(now - 7 * 86_400_000);
-      this.db.prepare('DELETE FROM tombstones WHERE at<?').run(now - 35 * 86_400_000);
+      // Retain deletion IDs until a separately verified backup-retirement policy can prune them.
       const owner = this.owner(); if (!owner || !owner.grant_enabled || this.paused()) return;
       const due = this.db.prepare("SELECT * FROM items WHERE owner=? AND household=? AND state='active' AND delivered=0 AND due_at<=? ORDER BY due_at, id LIMIT 100")
         .all(owner.id, owner.household, now) as unknown as ItemRow[];

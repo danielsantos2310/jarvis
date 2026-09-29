@@ -151,3 +151,12 @@ vite.config.ts.timestamp-*
 test-results/
 playwright-report/
 artifacts/
+
+# Encrypted recovery artifacts and interrupted private staging
+*.jbackup
+*.jdel
+*.jdel.*.tmp
+restore-incomplete
+
+*.jcatalog
+*.jcatalog.*.tmp

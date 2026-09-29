@@ -47,7 +47,7 @@ This version transactionally upgrades **SQLite schema 1 → 2**, adding only nul
 
 Before trying it with an existing **synthetic** alpha workspace, stop JARVIS and retain a protected copy of the entire stopped `.jarvis` folder. This is a development rollback copy, not a completed encrypted personal-backup feature. Do not copy a live database by itself.
 
-The previous alpha refuses schema 2. To roll back a synthetic evaluation, stop JARVIS and restore the full pre-upgrade copy before using the old application; this discards changes made after that copy. There is no automatic schema downgrade. Do not restore personal data until the separate encrypted-backup/deletion-journal milestone is implemented.
+The previous alpha refuses schema 2. To roll back a synthetic evaluation, stop JARVIS and restore the full pre-upgrade copy before using the old application; this discards changes made after that copy. There is no automatic schema downgrade. Alpha 3 now provides a separate [encrypted recovery workflow](backup-recovery.md); use it with the current independent journal. Personal-pilot and Windows acceptance remain pending.
 
 ## Scope and sources
 

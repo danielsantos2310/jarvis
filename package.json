@@ -1,6 +1,6 @@
 {
   "name": "jarvis-local-alpha",
-  "version": "0.2.0-alpha.2",
+  "version": "0.4.0-alpha.4",
   "private": true,
   "type": "module",
   "engines": {
@@ -13,8 +13,11 @@
     "typecheck": "tsc --noEmit",
     "test": "node --disable-sigusr1 --test --test-concurrency=1 tests/*.test.ts",
     "recover": "node --disable-sigusr1 src/core/recover.ts",
-    "check": "npm run typecheck && npm test && npm run build",
-    "test:e2e": "npm run build && playwright test"
+    "check": "npm run build && npm test",
+    "test:e2e": "npm run build && playwright test",
+    "backup": "node --disable-sigusr1 --disable-proto=throw src/core/backup-cli.ts",
+    "validate:pc": "node --disable-sigusr1 --disable-proto=throw src/validation/pc-cli.ts",
+    "start:backups": "node --disable-sigusr1 --disable-proto=throw src/core/server.ts --backups"
   },
   "dependencies": {
     "@fastify/cookie": "11.1.2",

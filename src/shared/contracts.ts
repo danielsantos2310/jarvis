@@ -6,7 +6,10 @@ export interface Item {
   timezone: string; schedule: Schedule | null; createdAt: number; state: 'active' | 'done';
 }
 export interface Notice { id: string; itemId: string; title: string; kind: ItemKind; dueAt: number; late: boolean }
+export interface AutomaticBackupStatus { state: 'off' | 'ready' | 'running' | 'attention'; nextAttemptAt: number | null }
 export interface Snapshot {
+  automaticBackups: AutomaticBackupStatus;
+  recovery: { configured: boolean; deletionSync: 'synced' | 'pending' | 'not-configured'; lastBackupAt: number | null };
   now: number; paused: boolean; grant: boolean; items: Item[]; notices: Notice[];
   presence: { state: 'occupied' | 'vacant' | 'unknown'; synthetic: true; expiresAt: number | null };
   services: { core: 'ready'; storage: 'ready'; voice: 'not-installed'; model: 'not-installed'; cloud: 'disabled' };

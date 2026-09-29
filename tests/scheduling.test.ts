@@ -146,7 +146,7 @@ test('schema-1 migration preserves existing account, items and notices and is re
       PRAGMA user_version=1;`); v1.close();
     for (let i=0;i<2;i++) {
       const migrated = new Store(path);
-      assert.equal((migrated.db.prepare('PRAGMA user_version').get() as {user_version:number}).user_version, 2);
+      assert.equal((migrated.db.prepare('PRAGMA user_version').get() as {user_version:number}).user_version, 3);
       assert.equal(migrated.list(migrated.owner()!)[0].title, 'Original item');
       assert.equal(migrated.list(migrated.owner()!)[0].schedule, null);
       assert.equal(migrated.notices(migrated.owner()!)[0].id, 'notice'); migrated.close();

@@ -26,3 +26,5 @@ Status: unfilled. Do not infer values from unrelated device/browser metadata. Av
 | Backup destination and operator | Pending; no credentials |
 
 Attach benchmark reports using opaque device labels. Use this inventory to choose a reference environment before setting delivery estimates or purchasing hardware.
+
+The [PC validation command](../development/pc-validation.md) generates basic runtime/hardware and recovery evidence on the machine where it runs. Transfer only observed values; microphone, GPU, disk encryption, physical-drive separation and user acceptance remain manual.

@@ -41,3 +41,7 @@ Browser coverage extends the original scenario with daily reminder creation, mis
 T-13 is now implemented/tested for this explicit once/daily/weekly policy set. Monthly/custom rules, complete fault/load testing, cross-version timezone-change drills, actual Windows hardware, encrypted backups/independent deletion replay, OS-enforced WAN denial and full accessibility/performance targets remain outside this evidence. No runtime on a sleeping/off PC or audible notification is claimed.
 
 Reproduce with `npm run check`, `npm run test:e2e` after installing Playwright Chromium, and `npm audit`. The temporary test environment may supply `JARVIS_TEST_CHROME` as described in the first report. The backend's timezone database comes from Node; the tested version is recorded in the final results above.
+
+## Subsequent work
+
+Alpha 3 adds manual encrypted snapshots and deletion replay; see [slice-3 evidence](m1-slice-3.md). The earlier results above remain a historical record.
