@@ -1,5 +1,11 @@
 # Changelog
 
+## Cyan control-room theme — 2026-09-30
+
+- Added a local SVG core display, dark grid, cyan technical panels and responsive control-room styling inspired by the owner's reference.
+- Preserved clear sample-data labels and real service status; no fictional telemetry or external visual dependencies.
+- Enlarged task controls and added narrow-phone/tablet layout checks.
+
 ## UI reliability checkpoint — 2026-09-29
 
 - Hide private content immediately on Lock, with explicit pending/failed server sign-out status.
