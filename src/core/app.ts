@@ -35,7 +35,7 @@ export async function createApp(options: AppOptions) {
   app.addHook('onRequest', async (req, reply) => {
     reply.header('Cache-Control', 'no-store').header('X-Content-Type-Options', 'nosniff')
       .header('Referrer-Policy', 'no-referrer').header('X-Frame-Options', 'DENY')
-      .header('Permissions-Policy', 'microphone=(), camera=(), geolocation=()')
+      .header('Permissions-Policy', 'microphone=(self), camera=(), geolocation=()')
       .header('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; object-src 'none'");
     if (req.headers.host !== `127.0.0.1:${port}`) throw new AppError(403, 'HOST_DENIED');
     if (req.headers.origin && req.headers.origin !== origin) throw new AppError(403, 'ORIGIN_DENIED');
@@ -85,7 +85,7 @@ export async function createApp(options: AppOptions) {
     await req.session.save();
     return { authenticated: true, setupRequired: false, csrf: req.session.csrf, expiresAt: req.session.authUntil };
   }
-  app.get('/api/public', async () => ({ mode: 'local', microphone: 'not-installed', cloud: 'disabled' }));
+  app.get('/api/public', async () => ({ mode: 'local', microphone: 'manual-test', cloud: 'disabled' }));
   app.get('/api/session', async req => {
     const owner = store.owner();
     const valid = owner && req.session.ownerId === owner.id && req.session.household === owner.household &&

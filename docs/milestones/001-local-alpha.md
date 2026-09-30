@@ -59,7 +59,7 @@ The planned future hub remains the user's Alienware Alpha R1 (i5-4590T, GTX 860M
 
 ## Storage, privacy and limits
 
-One SQLite database contains owner/auth metadata, items, notices, settings, idempotency receipts, redacted audit records and deletion tombstones. No default conversation history, browser local/session storage, service worker, analytics or outbound application integration is used. React renders strings as text. CSP and Permissions-Policy disable third-party resources, microphone, camera, geolocation and framing.
+One SQLite database contains owner/auth metadata, items, notices, settings, idempotency receipts, redacted audit records and deletion tombstones. No default conversation history, browser local/session storage, service worker, analytics or outbound application integration is used. React renders strings as text. CSP and Permissions-Policy disable third-party resources, camera, geolocation and framing. The owner-authorized [microphone lab](../development/microphone-lab.md) permits same-origin microphone requests only after an explicit click and browser permission, with bounded in-memory input metering and no transcription or upload.
 
 Titles persist until deleted. Notices reference live items and expire after seven days. Audit/receipts expire after 30 days. Deletion IDs are now retained conservatively in SQLite and, when configured, a separate encrypted journal. Transactions and foreign keys remove linked notices. Failed journal synchronization leaves live deletion effective and reports backup cleanup pending. Restoration requires the current independent journal; a snapshot alone is insufficient.
 

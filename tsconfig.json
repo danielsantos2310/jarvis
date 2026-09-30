@@ -6,5 +6,5 @@
     "erasableSyntaxOnly": true, "verbatimModuleSyntax": true,
     "skipLibCheck": true, "types": ["node"]
   },
-  "include": ["src", "tests", "vite.config.ts", "playwright.config.ts", "playwright.demo.config.ts"]
+  "include": ["src", "tests", "vite.config.ts", "playwright.config.ts", "playwright.demo.config.ts", "playwright.voice.config.ts"]
 }

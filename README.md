@@ -32,6 +32,8 @@ See [automatic backup setup](docs/development/automatic-backups.md) to unlock da
 
 ## Validate your PC
 
+The local dashboard also includes an optional [30-second microphone test](docs/development/microphone-lab.md). It measures input level only after a click and browser permission; speech recognition, clap activation and real presence sensors are not connected yet. The public sample preview keeps microphone access off.
+
 After building, run `npm run validate:pc -- --recovery-dir "E:\JARVIS-Recovery"` with an existing local directory on your chosen drive. It uses temporary synthetic data and writes a results report without opening your real workspace. See the [Windows PC validation guide](docs/development/pc-validation.md).
 
 ## Start here

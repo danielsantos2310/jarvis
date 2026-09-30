@@ -1,4 +1,5 @@
 /* Control-room theme. All artwork is local CSS/SVG; no fonts or images fetched. */
+.microphone-test{margin-top:20px}.microphone-test meter{display:block;width:100%;height:20px;accent-color:#45d6ff}.microphone-test [role=status]{font-size:13px;margin-top:12px}
 :root{color:#e0f3ff;background:#030810;--muted:#9eb8cd;--line:#203e54;--mint:#45d6ff;--card:#08131f;--orange:#ffcc85}
 body{background:radial-gradient(ellipse at 65% 10%,#07315255,transparent 55%),#030810}
 .shell{background-image:linear-gradient(#248dd008 1px,transparent 1px),linear-gradient(90deg,#248dd008 1px,transparent 1px);background-size:32px 32px}
