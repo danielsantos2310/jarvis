@@ -4,7 +4,7 @@ Date: 2026-09-30. This is early voice preparation explicitly requested by the ow
 
 ## Implemented: local input test
 
-Run the local app, unlock it, and choose **Start microphone test** in **Microphone lab**. Allow the browser permission if you want to test your default microphone. The level meter processes audio only in browser memory. It does not record, upload, transcribe, recognize a speaker or speak a response. No cloud API is used. The public sample preview does not include this feature.
+Run the local app, unlock it, and choose **Start microphone test** in **Microphone lab**. Allow the browser permission if you want to test your default microphone. The level meter processes audio only in browser memory. It does not record, upload, transcribe, recognize a speaker or speak a response. No cloud API is used. The public sample preview offers the same input-only test; see below.
 
 Use Stop to release capture. The test ends after 30 seconds and also stops on hidden tab, page exit or panel unmount (including Lock, pause, permission revocation and loss of core connectivity once detected). Cancel also handles permission requests that resolve late: late streams are stopped. An offline core may take up to the existing polling/request timeout to be detected; the local Stop button is immediate.
 
@@ -23,3 +23,7 @@ Identity remains the authenticated user session. Voice identification, if added 
 Next voice work: select and benchmark local speech-to-text/text-to-speech engines, then connect transcripts through the existing permission-checked action gateway. No current capability is labelled Processing/Speaking until those engines exist.
 
 References: [Hi-Link LD2410B/C presence and micro-movement](https://www.hlktech.net/index.php?cateid=8&id=65), [MDN microphone capture](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia), [MDN audio analyser](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createAnalyser).
+
+## Public preview input check
+
+The same bounded input-level meter is available on the HTTPS GitHub Pages preview after an explicit click and browser permission. It does not transcribe, record, upload or play microphone audio. The preview keeps its `connect-src none` policy and creates no backend requests. Open the page directly (an embedded preview may restrict microphone access). Capture stops on Stop, 30 seconds, hidden tab, page exit, reset, or unmount from demo pause/revoke. The demo has no real account or authority; its controls only change sample state. Local speech engines remain local-only.

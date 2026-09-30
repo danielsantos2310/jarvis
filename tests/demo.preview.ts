@@ -45,3 +45,56 @@ test('static preview works under the project path without backend or browser sto
   await expect(page.locator('.core-display')).toHaveAttribute('aria-hidden','true');
   expect(unexpected).toEqual([]); expect(errors).toEqual([]);
 });
+
+test('public microphone meter requires permission, releases tracks and makes no audio requests', async ({ page }) => {
+  const errors: string[] = [], requests: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.addInitScript(() => {
+    const fixture = { calls: 0, denied: false, tracks: [] as MediaStreamTrack[] };
+    Object.assign(window, { publicMic: fixture });
+    Object.defineProperty(navigator.mediaDevices, 'getUserMedia', { value: async () => {
+      fixture.calls++;
+      if (fixture.denied) throw new DOMException('Denied', 'NotAllowedError');
+      const context = new AudioContext(), oscillator = context.createOscillator(), output = context.createMediaStreamDestination();
+      oscillator.connect(output); oscillator.start(); await context.resume();
+      for (const track of output.stream.getTracks()) {
+        fixture.tracks.push(track); const stop = track.stop.bind(track);
+        track.stop = () => { stop(); void context.close().catch(() => {}); };
+      }
+      return output.stream;
+    } });
+  });
+  await page.goto('./');
+  const panel = page.getByRole('region', { name: 'Microphone test' });
+  await expect(panel).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { publicMic: { calls: number } }).publicMic.calls)).toBe(0);
+  // Initial static assets have loaded. Any subsequent request would be unexpected.
+  page.on('request', r => requests.push(r.url()));
+  await page.evaluate(() => { (window as unknown as { publicMic: { denied: boolean } }).publicMic.denied = true; });
+  await panel.getByRole('button', { name: 'Start microphone test' }).click();
+  await expect(panel.getByRole('status')).toContainText('permission was denied');
+  await page.evaluate(() => { (window as unknown as { publicMic: { denied: boolean } }).publicMic.denied = false; });
+  await page.clock.install();
+  await panel.getByRole('button', { name: 'Start microphone test' }).click();
+  await expect.poll(() => panel.getByRole('meter').evaluate(e => (e as HTMLMeterElement).value)).toBeGreaterThan(0);
+  await page.clock.fastForward(31000);
+  await expect(panel.getByRole('status')).toContainText('30-second test finished');
+  const released = () => page.evaluate(() => (window as unknown as { publicMic: { tracks: MediaStreamTrack[] } }).publicMic.tracks.every(t => t.readyState === 'ended'));
+  expect(await released()).toBe(true);
+  await panel.getByRole('button', { name: 'Start microphone test' }).click();
+  await panel.getByRole('button', { name: 'Stop microphone', exact: true }).click();
+  expect(await released()).toBe(true);
+  await panel.getByRole('button', { name: 'Start microphone test' }).click();
+  await expect(panel.getByRole('button', { name: 'Stop microphone', exact: true })).toBeVisible();
+  await page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, value: true }); document.dispatchEvent(new Event('visibilitychange')); });
+  await expect(panel.getByRole('status')).toContainText('tab is hidden');
+  expect(await released()).toBe(true);
+  await page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, value: false }); });
+  await panel.getByRole('button', { name: 'Start microphone test' }).click();
+  await expect(panel.getByRole('button', { name: 'Stop microphone', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Controls', exact: true }).click();
+  await page.getByRole('button', { name: 'Pause actions & delivery', exact: true }).click();
+  await expect(panel).toHaveCount(0);
+  expect(await released()).toBe(true);
+  expect(requests).toEqual([]); expect(errors).toEqual([]);
+});
