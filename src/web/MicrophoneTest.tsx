@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 /** Short, explicit, in-memory input check. No recording or transmission. */
-export function MicrophoneTest() {
+export function MicrophoneTest({ publicPreview = false }: { publicPreview?: boolean }) {
   const [state,setState] = useState<'off'|'requesting'|'listening'>('off');
   const [level,setLevel] = useState(0);
   const [message,setMessage] = useState('Microphone is off.');
@@ -19,7 +19,7 @@ export function MicrophoneTest() {
   },[]);
   async function start() {
     if (state !== 'off') return;
-    if (!navigator.mediaDevices?.getUserMedia) { setMessage('Microphone access is unavailable in this browser. Use the local app in a supported browser.'); return; }
+    if (!navigator.mediaDevices?.getUserMedia) { setMessage('Microphone access is unavailable in this browser. Open this page directly over HTTPS, or use the local app in a supported browser.'); return; }
     const attempt = ++generation.current; setState('requesting'); setMessage('Waiting for your microphone permission. You can cancel at any time.');
     let stream: MediaStream | undefined; let context: AudioContext | undefined;
     try {
@@ -57,12 +57,12 @@ export function MicrophoneTest() {
         : 'Could not start the microphone. Check your input device and browser permissions.');
     }
   }
-  return <section className="card microphone-test" aria-label="Microphone test">
+  return <section id="microphone-test" className="card microphone-test" aria-label="Microphone test">
     <div className="card-heading"><h2>Microphone lab</h2><span className="tag">{state === 'listening' ? 'MIC ACTIVE' : state === 'requesting' ? 'PERMISSION' : 'MIC OFF'}</span></div>
     <p className="muted">Test your default microphone for 30 seconds. Audio is processed only in this tab: no recording, upload, transcription or identity recognition.</p>
     <meter min="0" max="100" value={level} aria-label="Microphone input level"/>
     <p role="status">{message}</p>
     {state === 'off' ? <button onClick={()=>void start()}>Start microphone test</button> : <button className="danger" onClick={()=>stop()}>{state === 'requesting' ? 'Cancel microphone request' : 'Stop microphone'}</button>}
-    <p className="fineprint">Stops when you hide this tab, lock the workspace, pause actions or revoke access. Presence and clap activation are not connected yet.</p>
+    <p className="fineprint">{publicPreview ? 'Stops when you hide this tab, reset the demo, pause actions or revoke demo access.' : 'Stops when you hide this tab, lock the workspace, pause actions or revoke access.'} Presence and clap activation are not connected yet.</p>
   </section>;
 }
