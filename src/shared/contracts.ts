@@ -12,7 +12,7 @@ export interface Snapshot {
   recovery: { configured: boolean; deletionSync: 'synced' | 'pending' | 'not-configured'; lastBackupAt: number | null };
   now: number; paused: boolean; grant: boolean; items: Item[]; notices: Notice[];
   presence: { state: 'occupied' | 'vacant' | 'unknown'; synthetic: true; expiresAt: number | null };
-  services: { core: 'ready'; storage: 'ready'; voice: 'not-installed'; model: 'not-installed'; cloud: 'disabled' };
+  services: { core: 'ready'; storage: 'ready'; voice: 'not-installed' | 'configured'; model: 'not-installed'; cloud: 'disabled' };
   audit: { action: string; decision: string; at: number }[];
 }
 export type Action =
