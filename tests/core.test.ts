@@ -190,7 +190,8 @@ test('synthetic presence expires and never acquires identity, credentials or cap
     assert.equal((await f.request('/api/snapshot')).json().presence.state, 'occupied');
     f.advance(30_001);
     const r = await f.request('/api/snapshot'); assert.equal(r.json().presence.state, 'unknown');
-    assert.match(String(r.headers['permissions-policy']), /microphone=\(\)/);
+    assert.match(String(r.headers['permissions-policy']), /microphone=\(self\)/);
+    assert.match(String(r.headers['permissions-policy']), /camera=\(\)/);
     assert.match(String(r.headers['cache-control']), /no-store/);
   } finally { await f.close(); }
 });
