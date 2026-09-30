@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import type { Action, Snapshot, Item } from '../shared/contracts.ts';
 import './styles.css';
 import './hud.css';
+import { SpeechPanel } from './SpeechPanel.tsx';
 import { VoiceWaveform } from './VoiceWaveform.tsx';
 import { CoreDisplay } from './CoreDisplay.tsx';
 import { MicrophoneTest } from './MicrophoneTest.tsx';
@@ -181,7 +182,9 @@ function App() {
           <div className="responses" aria-live="polite">{messages.slice(-1).map(m => <p key={m.at}>{m.text}</p>)}</div>
           <small className="command-note">Defined text commands · No AI model connected · {__JARVIS_DEMO__ ? 'Optional microphone test below' : 'Voice commands not installed'}</small>
         </div><CoreDisplay/></section>
-        <VoiceWaveform/>
+        {!__JARVIS_DEMO__ && online && snapshot?.grant && !snapshot.paused && snapshot.services.voice === 'configured'
+          ? <SpeechPanel csrf={auth.csrf ?? ''} onTranscript={text => { setCommand(text); document.getElementById('command')?.focus(); }} reply={messages.at(-1)?.text ?? ''}/>
+          : <VoiceWaveform/>}
         <div className="metric-grid"><div className="metric"><Icon kind="task"/><div><span>Open tasks</span><strong>{snapshot?.grant ? tasks.filter(t => t.state === 'active').length : '—'}<small>in your workspace</small></strong></div></div><div className="metric"><Icon kind="clock"/><div><span>Active timers</span><strong>{snapshot?.grant ? timers.length : '—'}<small>kept on this PC</small></strong></div></div><div className="metric"><Icon kind="lock"/><div><span>Processing</span><strong className="metric-word">{__JARVIS_DEMO__ ? 'Browser' : 'Local'}<small>{__JARVIS_DEMO__ ? 'sample workspace' : 'cloud disabled'}</small></strong></div></div></div>
         {snapshot && !__JARVIS_DEMO__ && <section className="card recovery-card" aria-label="Backup and recovery"><h2>Backup & recovery</h2>
           <p>{!snapshot.recovery.configured ? 'Backups are not configured. Use the backup guide to choose a separate recovery location.' : snapshot.recovery.lastBackupAt ? `Last backup: ${timeLabel(snapshot.recovery.lastBackupAt)}` : 'Recovery location configured. Create your first encrypted backup from the terminal.'}</p>

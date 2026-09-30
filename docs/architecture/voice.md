@@ -2,6 +2,8 @@
 
 Version 0.1 · Local pipeline first; optional external providers require a separate ADR and consent gate.
 
+Implementation checkpoint: the [optional local voice test](../development/local-voice.md) now provides explicit capture, transcript review and requested spoken playback through loopback Wyoming workers. The session/VAD/multi-room design below remains a target; it is not all implemented.
+
 ## Processing path
 
 ```mermaid

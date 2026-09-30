@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import type { SpeechService } from './voice.ts';
 import type { FastifyRequest } from 'fastify';
 import cookie from '@fastify/cookie';
 import session from '@fastify/session';
@@ -21,7 +22,7 @@ declare module 'fastify' {
   interface Session { ownerId?: string; household?: string; epoch?: number; csrf?: string; authUntil?: number }
   interface FastifyRequest { actor: Owner | null }
 }
-export interface AppOptions { store: Store; port?: number; bootstrapCode: string; now?: () => number; serveWeb?: boolean; scheduler?: boolean; automaticBackupStatus?: () => AutomaticBackupStatus }
+export interface AppOptions { speech?: SpeechService; store: Store; port?: number; bootstrapCode: string; now?: () => number; serveWeb?: boolean; scheduler?: boolean; automaticBackupStatus?: () => AutomaticBackupStatus }
 export async function createApp(options: AppOptions) {
   const store = options.store; const now = options.now ?? Date.now;
   const port = options.port ?? 3000; const origin = `http://127.0.0.1:${port}`;
@@ -122,7 +123,7 @@ export async function createApp(options: AppOptions) {
     const owner = req.actor!;
     if (presence.expiresAt !== null && presence.expiresAt <= now()) presence = { state: 'unknown', synthetic: true, expiresAt: null };
     return { automaticBackups: options.automaticBackupStatus?.() ?? { state: 'off', nextAttemptAt: null }, recovery: store.recoveryStatus(), now: now(), paused: store.paused(), grant: store.canRead(owner), items: store.list(owner), notices: store.notices(owner), presence,
-      services: { core: 'ready', storage: 'ready', voice: 'not-installed', model: 'not-installed', cloud: 'disabled' },
+      services: { core: 'ready', storage: 'ready', voice: options.speech ? 'configured' : 'not-installed', model: 'not-installed', cloud: 'disabled' },
       audit: store.db.prepare('SELECT action,decision,at FROM audit WHERE owner=? ORDER BY id DESC LIMIT 8').all(owner.id) as unknown as Snapshot['audit'],
     } satisfies Snapshot;
   });
@@ -168,6 +169,52 @@ export async function createApp(options: AppOptions) {
     presence = { state: req.body.state, synthetic: true, expiresAt: req.body.state === 'unknown' ? null : now() + 30_000 };
     return presence;
   });
+  let voiceBusy = false;
+  const voiceControllers = new Set<AbortController>();
+  function voiceAccess(req: FastifyRequest) {
+    const owner = store.owner();
+    if (!owner || owner.epoch !== req.session.epoch || owner.id !== req.session.ownerId || owner.household !== req.session.household || (req.session.authUntil ?? 0) <= now()) throw new AppError(401, 'LOGIN_REQUIRED');
+    if (!store.canRead(owner)) throw new AppError(403, 'LOCAL_GRANT_REQUIRED');
+    if (store.paused()) throw new AppError(403, 'ACTIONS_PAUSED');
+    if (!options.speech) throw new AppError(503, 'VOICE_DISABLED');
+  }
+  async function voiceJob<T>(req: FastifyRequest, reply: import('fastify').FastifyReply, work: (signal: AbortSignal) => Promise<T>) {
+    voiceAccess(req);
+    if (voiceBusy) throw new AppError(429, 'VOICE_BUSY');
+    voiceBusy = true;
+    const controller = new AbortController(); voiceControllers.add(controller);
+    const cancel = () => { if (!reply.raw.writableEnded) controller.abort(); };
+    reply.raw.on('close', cancel);
+    // Revalidate even if another tab locks, pauses or revokes access during inference.
+    const monitor = setInterval(() => { void req.session.reload().then(() => voiceAccess(req)).catch(() => controller.abort()); }, 250);
+    try {
+      const result = await work(controller.signal);
+      await req.session.reload(); voiceAccess(req);
+      if (controller.signal.aborted) throw new AppError(409, 'VOICE_CANCELLED');
+      return result;
+    } finally { clearInterval(monitor); reply.raw.off('close', cancel); controller.abort(); voiceControllers.delete(controller); voiceBusy = false; }
+  }
+  app.get('/api/voice/status', async (req, reply) => {
+    if (!options.speech) return { enabled: false, stt: false, tts: false };
+    return voiceJob(req, reply, async signal => ({ enabled: true, ...await options.speech!.status(signal) }));
+  });
+  app.post<{ Body: { pcm: string } }>('/api/voice/transcribe', {
+    bodyLimit: 1_300_000, config: { rateLimit: { max: 6, timeWindow: '1 minute' } },
+    schema: { body: { type: 'object', additionalProperties: false, required: ['pcm'], properties: { pcm: { type: 'string', minLength: 4268, maxLength: 1280000, pattern: '^[A-Za-z0-9+/]+={0,2}$' } } } },
+  }, async (req, reply) => {
+    const pcm = Buffer.from(req.body.pcm, 'base64');
+    if (pcm.length < 3200 || pcm.length > 960000 || pcm.length % 2 || pcm.toString('base64') !== req.body.pcm) throw new AppError(400, 'INVALID_AUDIO');
+    try { return await voiceJob(req, reply, async signal => ({ text: await options.speech!.transcribe(pcm, signal) })); }
+    finally { pcm.fill(0); }
+  });
+  app.post<{ Body: { text: string } }>('/api/voice/speak', {
+    config: { rateLimit: { max: 6, timeWindow: '1 minute' } },
+    schema: { body: { type: 'object', additionalProperties: false, required: ['text'], properties: { text: { type: 'string', minLength: 1, maxLength: 500, pattern: '\\S' } } } },
+  }, async (req, reply) => {
+    const wav = await voiceJob(req, reply, signal => options.speech!.synthesize(req.body.text, signal));
+    return reply.type('audio/wav').send(wav);
+  });
+  app.addHook('preClose', async () => { for (const controller of voiceControllers) controller.abort(); });
   app.get('/api/openapi.json', async () => app.swagger());
   if (options.serveWeb !== false && existsSync(resolve('dist/index.html'))) {
     await app.register(staticFiles, { root: resolve('dist'), index: 'index.html', cacheControl: false });
