@@ -54,7 +54,12 @@ export class Store {
   transaction<T>(fn: () => T): T {
     this.db.exec('BEGIN IMMEDIATE');
     try { const result = fn(); this.db.exec('COMMIT'); return result; }
-    catch (error) { this.db.exec('ROLLBACK'); throw error; }
+    catch (error) {
+      // SQLite can roll back automatically (for example on storage failures).
+      // Do not replace the original error with "no transaction is active".
+      if (this.db.isTransaction) this.db.exec('ROLLBACK');
+      throw error;
+    }
   }
   owner(): Owner | undefined { return this.db.prepare('SELECT * FROM owner WHERE singleton=1').get() as unknown as Owner | undefined; }
   enroll(password: string, now: number) {
