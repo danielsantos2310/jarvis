@@ -1,0 +1,21 @@
+# Optional local development workers. Initial startup downloads models.
+# Host ports are loopback-only: never change these to 0.0.0.0.
+# Record resolved image digests after testing before treating this as a deployment baseline.
+services:
+  whisper:
+    image: rhasspy/wyoming-whisper:latest
+    ports:
+      - "127.0.0.1:10300:10300"
+    volumes:
+      - whisper-models:/data
+    command: ["--model", "tiny-int8", "--language", "en"]
+  piper:
+    image: rhasspy/wyoming-piper:latest
+    ports:
+      - "127.0.0.1:10200:10200"
+    volumes:
+      - piper-models:/data
+    command: ["--voice", "en_US-lessac-medium"]
+volumes:
+  whisper-models:
+  piper-models:
