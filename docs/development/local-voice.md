@@ -34,8 +34,11 @@ Stop the existing JARVIS process with Ctrl+C, then:
 
 ```powershell
 npm run build
-npm start -- --voice
+npm run voice:check
+npm run start:voice
 ```
+
+`voice:check` only probes readiness; it does not install software, access your microphone or alter your workspace. Missing Docker is informational if you already run native workers. Exit codes: 0 = ready to attempt the browser test, 1 = a prerequisite failed, 2 = command error. For machine-readable output use `npm run voice:check -- --json`.
 
 Open the exact `http://127.0.0.1:3000` address (or configured JARVIS port), unlock and find **Talk to JARVIS**. Click **Check voice engines**, then **Test spoken voice**. Next, use **Start voice capture**, speak a short command, and click **Finish and transcribe**. Review the words and send them. Click **Read latest reply aloud** to hear the result.
 

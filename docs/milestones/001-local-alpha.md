@@ -1,6 +1,6 @@
 # Milestone 1 — Local PC alpha
 
-Status: **implementation slices 1–4 prepared for review; full M1 acceptance remains open**.
+Status: **core alpha slices and optional voice preparation merged; full M1 acceptance remains open**.
 Date: 2026-09-28. Baseline: merged [PR #1](https://github.com/danielsantos2310/jarvis/pull/1), commit `d479389241f32c650b6787faa30a5ac59ec9df20`.
 
 Daniel's subsequent instruction, “ok lets go to next step in the project,” authorizes progressing from documentation to the next implementation step. This change implements the roadmap's first reversible local slice. It does not record owner sign-off on all six proposed ADRs or claim the complete M1 release gate has passed.
@@ -63,7 +63,7 @@ One SQLite database contains owner/auth metadata, items, notices, settings, idem
 
 Titles persist until deleted. Notices reference live items and expire after seven days. Audit/receipts expire after 30 days. Deletion IDs are now retained conservatively in SQLite and, when configured, a separate encrypted journal. Transactions and foreign keys remove linked notices. Failed journal synchronization leaves live deletion effective and reports backup cleanup pending. Restoration requires the current independent journal; a snapshot alone is insufficient.
 
-Limits: 4 KiB request body; 500-character command; 160-character title; 1,000 items; 20,000 receipts; 50,000 audit rows; 100 sessions; global/request-specific rate limits. Login derivation is serialized; an opted-in backup derivation can overlap it. Low-memory and performance validation remain open. Schemas 1 and 2 upgrade to schema 3 on open; a newer schema is refused. The local runtime lock prevents two normal launch/recovery processes from using the same data directory concurrently. A stale lock requires operator inspection after a crash.
+Limits: 4 KiB request body by default (the opt-in voice transcription route allows a bounded 1.3 MB JSON body / 960 kB decoded PCM); 500-character command; 160-character title; 1,000 items; 20,000 receipts; 50,000 audit rows; 100 sessions; global/request-specific rate limits. Login derivation is serialized; an opted-in backup derivation can overlap it. Low-memory and performance validation remain open. Schemas 1 and 2 upgrade to schema 3 on open; a newer schema is refused. The local runtime lock prevents two normal launch/recovery processes from using the same data directory concurrently. A stale lock requires operator inspection after a crash.
 
 Database content is not application-encrypted. Linux directory/file permissions are restricted; Windows uses the current account's inherited permissions. Host encryption, account protection, off-disk encrypted backups and deletion replay are prerequisites for a personal/home pilot. Start with synthetic examples on the work PC.
 
@@ -80,4 +80,10 @@ See the [slice-1](../testing/m1-slice-1.md), [slice-2](../testing/m1-slice-2.md)
 | M1-06 | Validate host network denial, disk-full/quota behavior, accessibility and release environment | T-01/T-24/T-33/T-35/T-36; remaining M1 release gates |
 | M1-07 | Owner review of this slice and M1 closeout | Record actual decisions, remaining defects and acceptance |
 
-M2 voice starts after a dependable M1 baseline, microphone/language inventory and the local voice benchmark plan. Do not jump to multi-room listening or physical device control from this alpha.
+## Voice preparation checkpoint — 2026-10-01
+
+At the owner's explicit request, bounded voice preparation proceeded before full M1 acceptance. The local Whisper/Piper connection and public browser-only microphone meter are merged (PRs #10 and #11). Speech remains opt-in, English, explicit capture and transcript review; there is no free-form model, speaker identity, automatic sensor/clap activation, Echo integration or multi-room control.
+
+The merged UI showed both microphone paths at once and retained obsolete voice labels. The readiness follow-up separates the paths and adds `npm run voice:check` plus `npm run start:voice`; see the [local setup guide](../development/local-voice.md). Protocol probes and synthetic browser tests are not physical-PC voice acceptance.
+
+The next owner-PC steps are to install/start local workers, pass the readiness check, test microphone and speakers, and record accuracy and latency. M1 still requires Windows/off-disk recovery evidence, resource/latency measurements, remaining accessibility/network checks and owner sign-off. No full milestone completion is claimed.

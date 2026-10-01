@@ -71,3 +71,7 @@ The master specification preserves the M0 design baseline. The M1 implementation
 Repository: [danielsantos2310/jarvis](https://github.com/danielsantos2310/jarvis).
 
 See [contribution rules](CONTRIBUTING.md), [security reporting](SECURITY.md) and the [changelog](CHANGELOG.md).
+
+### Local voice readiness
+
+For optional Whisper/Piper speech, follow the [local voice guide](docs/development/local-voice.md). After building, run `npm run voice:check` to identify missing prerequisites, then `npm run start:voice`. A passing check means the services answered; real microphone, speaker and accuracy tests are still required.
