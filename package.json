@@ -18,7 +18,9 @@
     "backup": "node --disable-sigusr1 --disable-proto=throw src/core/backup-cli.ts",
     "validate:pc": "node --disable-sigusr1 --disable-proto=throw src/validation/pc-cli.ts",
     "start:backups": "node --disable-sigusr1 --disable-proto=throw src/core/server.ts --backups",
-    "build:demo": "tsc --noEmit && vite build --mode demo"
+    "build:demo": "tsc --noEmit && vite build --mode demo",
+    "voice:check": "node --disable-sigusr1 src/validation/voice-cli.ts",
+    "start:voice": "node --disable-sigusr1 --disable-proto=throw src/core/server.ts --voice"
   },
   "dependencies": {
     "@fastify/cookie": "11.1.2",
