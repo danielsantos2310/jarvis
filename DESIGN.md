@@ -64,7 +64,7 @@ System display fonts give headings an instrument-panel feel without font downloa
 
 ## Layout
 
-48px faint grid; a 208px desktop sidebar; 1600px maximum workspace. Desktop reactor sits left of the main command. At tablet widths the reactor stacks above the command. At 680px and below, a visible bottom navigation replaces hidden links, with safe-area padding and clearance after the last content. The top controls remain accessible. Standard gaps are 8, 16, 20, 24 and 32px. Cards flow in one column below 1100px.
+Full-screen spatial workspace with fourteen independently draggable circular tools around a central reactor. No sidebar, dropdown navigation or permanent icon names. Desktop uses an ellipse; narrow screens use two perimeter columns. Tool names appear on hover/focus and remain available to assistive technology. Panels open over the stage, expand, scroll internally and close with focus returned to the opener. At 680px and below panels use near-full width. Positions and hidden tools last only for this session; restore resets the layout. Standard controls retain readable labels inside panels.
 
 ## Elevation & Depth
 
@@ -76,15 +76,15 @@ One restrained halo around the core and thin cyan corner marks distinguish the h
 
 ## Components
 
-Main owns shell, action lifecycle and status; CoreDisplay owns decorative SVG; ReminderForm owns schedule entry; VoiceWaveform owns output visualization; SpeechPanel owns local capture/review/playback; MicrophoneTest owns browser-only metering. Reuse these owners.
+FloatingWorkspace owns the spatial shell, icon movement/hiding/restoration and panel focus; main owns action lifecycle and status; CoreDisplay owns decorative SVG; ReminderForm owns schedule entry; VoiceWaveform owns output visualization; SpeechPanel owns local capture/review/playback; MicrophoneTest owns browser-only metering. Reuse these owners.
 
-Buttons use native semantics with hover, active, focus-visible, disabled and existing busy states; touch controls target at least 44px. Plain navigation anchors jump to sections. The preview notice has native details/summary disclosure. The microphone shortcut navigates only: it never requests permission. Existing permission/auth/server validation and lifecycle contracts remain authoritative.
+Buttons use native semantics with hover, active, focus-visible, disabled and existing busy states; touch controls target at least 44px. Floating icon buttons open bounded nonmodal panels. Arrow keys offer non-drag movement; Delete hides; Restore returns all tools. Escape cancels a move or closes the panel. The microphone shortcut navigates only: it never requests permission. Existing permission/auth/server validation and lifecycle contracts remain authoritative.
 
 Select and date ownership is deliberately native in ReminderForm and Controls; browser-owned popup geometry and local date presentation are accepted. The shared Form component owns inline constraint errors, first-invalid-field focus, aria-invalid and error association. The API retains authoritative domain validation. PasswordInput masks by default and provides an accessible reveal toggle. This visual change does not alter recurrence/DST, deletion, permissions or transcript review semantics. Existing browser suites verify them. No new CRUD/table workflow or toast system is introduced.
 
-Scrollbars are global in hud.css: --scroll-thumb, --scroll-track, --scroll-hover; standards properties plus WebKit fallback, with forced-colors reset. The document owns normal scrolling, native dialog owns bounded internal scrolling. Feedback remains inline using existing live regions, banners and responses.
+Scrollbars are global in hud.css: --scroll-thumb, --scroll-track, --scroll-hover; standards properties plus WebKit fallback, with forced-colors reset. Tool panels and native dialogs own bounded internal scrolling. Feedback remains inline using existing live regions, banners and responses.
 
-Icons are the existing local 24px SVG stroke set. Visible labels remain on section navigation, including mobile. Voice motion comes from real output data or the explicitly requested silent preview. Core remains static; reduced-motion removes transitions. Avoid continuous decorative motion during work.
+Icons are local SVG symbols inside segmented instrument rings. The user explicitly requested icon-only navigation. VoiceWaveform drives radial spokes, ring amplitude and waves from actual output PCM; the center also offers a clearly identified silent preview. Standby is still, and reduced-motion suppresses continuous animation. Closing the microphone panel releases capture/playback resources. Unconnected services remain explicitly unconnected; fictional email content is labelled.
 
 ## Do's and Don'ts
 
@@ -96,7 +96,7 @@ Icons are the existing local 24px SVG stroke set. Visible labels remain on secti
 
 ## Verification and existing debt
 
-Browser coverage: `tests/demo.preview.ts`, `tests/*.e2e.ts`, `tests/pipeline.speech.ts`, microphone suite. Exact executed commands/results are recorded in `docs/testing/command-center-design.md`.
+Browser coverage: `tests/demo.preview.ts`, `tests/*.e2e.ts`, `tests/pipeline.speech.ts`, microphone suite. Exact executed commands/results are recorded in `docs/testing/floating-hud.md`.
 
 The earlier UI mixed small cyan overrides with mint base styles. This change deliberately replaces the HUD theme as one canonical file; structural CSS remains for untouched flows. Native validation bubbles were replaced through the shared Form owner while preserving required, length and domain constraints.
 
@@ -108,3 +108,12 @@ The earlier UI mixed small cyan overrides with mint base styles. This change del
 | Date | Native datetime-local in ReminderForm | Schedule contract and DESIGN.md | native | Recurrence/DST browser workflow |
 | Form | src/web/Form.tsx | Native constraints plus server schemas | login, control, task, command | Browser error, focus, and successful submit |
 | Scrollbar | src/web/hud.css | Runtime CSS tokens mirrored here | global; forced-colors system | Browser computed style |
+
+## Reference direction — October 2026
+
+Owner-supplied Iron Man desktop and the retrieved JARVIS widget boards informed segmented rings, perimeter tools and cyan panel corners. Reviewed boards: Neon JARVIS Dashboard Interface, JARVIS Email Widget Interface, JARVIS Neon Calendar HUD Interface and JARVIS Neon Notes and Tasks HUD, plus the supplied Weather board. These are visual references, not embedded screenshots: SVG controls remain interactive, scalable and accessible. State colors must represent real state; do not invent connected accounts or telemetry.
+
+| Capability | Canonical owner | Source of truth | Allowed variants | Verification |
+| --- | --- | --- | --- | --- |
+| Spatial tools | src/web/FloatingWorkspace.tsx | This document and user reference | desktop ellipse, mobile perimeter | Pointer/keyboard drag, hide, restore, panels, viewport bounds |
+| Voice motion | src/web/VoiceWaveform.tsx | Actual analyser data or explicit preview | standby, real output, silent preview, reduced motion | Synthetic PCM playback and preview tests |

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { VoiceWaveform } from './VoiceWaveform.tsx';
 type Phase = 'idle' | 'permission' | 'listening' | 'transcribing' | 'synthesizing' | 'speaking';
 const voiceErrors: Record<string, string> = {
@@ -7,7 +8,10 @@ const voiceErrors: Record<string, string> = {
   VOICE_PROTOCOL_ERROR: 'The speech engine returned unsupported audio or a malformed response.', VOICE_INCOMPLETE: 'The speech engine disconnected before finishing.',
   LOGIN_REQUIRED: 'Your session ended. Unlock the workspace again.', ACTIONS_PAUSED: 'Actions are paused.', LOCAL_GRANT_REQUIRED: 'Workspace permission was revoked.',
 };
-export function SpeechPanel({ csrf, onTranscript, reply }: { csrf: string; onTranscript: (text: string) => void; reply: string }) {
+export function SpeechPanel({ csrf, onTranscript, reply, controlsOpen = true }: { controlsOpen?: boolean; csrf: string; onTranscript: (text: string) => void; reply: string }) {
+  const [target, setTarget] = useState<HTMLElement | null>(null);
+  useEffect(() => { setTarget(document.getElementById('speech-controls')); }, []);
+  useEffect(() => { if (!controlsOpen) stop('Voice stopped. Microphone is off.'); }, [controlsOpen]);
   const [phase, setPhase] = useState<Phase>('idle');
   const [status, setStatus] = useState({ stt: false, tts: false });
   const [message, setMessage] = useState('Check the local engines before speaking.');
@@ -123,7 +127,7 @@ export function SpeechPanel({ csrf, onTranscript, reply }: { csrf: string; onTra
   }
   return <section className="speech-panel" id="voice-session" aria-label="Local voice session">
     <VoiceWaveform analyser={analyser} speaking={phase === 'speaking'} connected={status.tts}/>
-    <div className="card microphone-test">
+    {target && createPortal(<div className="card microphone-test">
       <div className="card-heading"><h2>Talk to JARVIS</h2><span className="tag">{phase === 'listening' ? 'MIC ACTIVE' : 'MIC OFF'}</span></div>
       <p className="muted">English · local Whisper + Piper. Audio is held temporarily in memory and sent only to this PC. Review recognised words before sending. Spoken replies are audible to people nearby.</p>
       <p>Whisper: {status.stt ? 'responded' : 'not checked / unavailable'} · Piper: {status.tts ? 'responded' : 'not checked / unavailable'}</p>
@@ -137,6 +141,6 @@ export function SpeechPanel({ csrf, onTranscript, reply }: { csrf: string; onTra
         {phase !== 'idle' && <button className="danger" onClick={() => stop()}>Stop voice</button>}
       </div>
       <p className="fineprint">No automatic listening, voice identification or Echo connection. Hide this tab or lock the workspace to stop. Text commands remain available.</p>
-    </div>
+    </div>, target)}
   </section>;
 }

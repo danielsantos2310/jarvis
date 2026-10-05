@@ -1,3 +1,4 @@
+import { openTool } from './spatial-helpers.ts';
 import { test, expect } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 const password = 'Synthetic browser passphrase 5729';
@@ -27,9 +28,12 @@ test('local browser workflow: enrollment, inert titles, reminders, pause, scopes
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Create workspace' }).click();
+  await openTool(page, 'Commands');
   await expect(page.getByRole('heading', { name: 'At your service.' })).toBeVisible();
+  await openTool(page, 'System');
   await expect(page.getByRole('region', { name: 'Backup and recovery' })).toContainText('Backups are not configured');
   await expect(page.getByRole('region', { name: 'Backup and recovery' })).toContainText('Automatic backups are off for this session.');
+  await openTool(page, 'Tasks & reminders');
   await page.getByLabel('Task title').fill('Review the JARVIS local alpha');
   await page.locator('.task-form').getByRole('button', { name: 'Add', exact: true }).click();
   await expect(page.locator('.item').getByText('Review the JARVIS local alpha', { exact: true })).toBeVisible();
@@ -50,23 +54,31 @@ test('local browser workflow: enrollment, inert titles, reminders, pause, scopes
   // Observe after the stale response has been consumed, before the next poll.
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   await expect(page.getByRole('button', {name:'Complete Keep the newest snapshot',exact:true})).toBeVisible();
+  await openTool(page, 'Commands');
   await page.getByLabel('Ask JARVIS').fill('timer 2 seconds');
   await page.getByRole('button', { name: 'Send command' }).click();
+  await openTool(page, 'Tasks & reminders');
   await expect(page.locator('.notice').getByText('2 seconds timer', { exact: true })).toBeVisible({ timeout: 10000 });
   await page.getByRole('button', { name: 'Dismiss 2 seconds timer' }).click();
   await expect(page.locator('.notice')).toHaveCount(0);
+  await openTool(page, 'Commands');
   await page.getByLabel('Ask JARVIS').fill('timer 25 minutes');
   await page.getByRole('button', { name: 'Send command' }).click();
+  await openTool(page, 'Timers');
   await expect(page.locator('.timer-row').getByText('25 minutes timer', { exact: true })).toBeVisible();
   await page.reload();
+  await openTool(page, 'Tasks & reminders');
   await expect(page.locator('.item').getByText('Review the JARVIS local alpha', { exact: true })).toBeVisible();
+  await openTool(page, 'Timers');
   await page.getByRole('button', { name: 'Cancel 2 seconds timer', exact: true }).click();
+  await openTool(page, 'System');
   await page.getByRole('button', { name: 'Open sensor simulator' }).click();
   await page.getByRole('button', { name: 'occupied', exact: true }).click();
   await expect(page.locator('.simulation')).toContainText('Test room: occupied');
   await page.getByRole('button', { name: 'Hide sensor simulator' }).click();
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({ path: 'artifacts/workspace-desktop.png', fullPage: true });
+  await openTool(page, 'Tasks & reminders');
   // Literal markup stays text; no browser HTML interpretation.
   await page.getByLabel('Task title').fill('<img src=x onerror=alert(1)>');
   await page.locator('.task-form').getByRole('button', { name: 'Add', exact: true }).click();
@@ -99,6 +111,7 @@ test('local browser workflow: enrollment, inert titles, reminders, pause, scopes
   await page.locator('.task-form').getByRole('button', { name: 'Add', exact: true }).click();
   await expect(page.locator('.item').filter({ hasText: 'Morning stretch' })).toContainText('daily');
   await page.reload();
+  await openTool(page, 'Tasks & reminders');
   await expect(page.getByRole('button', { name: 'Stop repeating Morning stretch' })).toBeVisible();
   await page.getByRole('button', { name: 'Stop repeating Morning stretch' }).click();
   await expect(page.locator('.item').filter({ hasText: 'Morning stretch' })).toContainText('Completed');
@@ -160,6 +173,7 @@ test('local browser workflow: enrollment, inert titles, reminders, pause, scopes
   // Verify login still works after confirmed logout, then simulate unreachable core.
   await page.getByLabel('Password', {exact:true}).fill(password);
   await page.getByRole('button', {name:'Unlock workspace'}).click();
+  await openTool(page, 'Tasks & reminders');
   await expect(page.getByText('Review the JARVIS local alpha', {exact:true})).toBeVisible();
   await page.route('**/api/logout', route => route.abort(), {times:1});
   await page.getByRole('button', {name:'Lock workspace'}).click();

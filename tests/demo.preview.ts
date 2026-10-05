@@ -1,51 +1,5 @@
 import { test, expect } from '@playwright/test';
-test('static preview works under the project path without backend or browser storage', async ({ page }) => {
-  const errors: string[] = [], unexpected: string[] = [];
-  page.on('pageerror', e => errors.push(e.message));
-  page.on('request', r => { if (!r.url().startsWith('http://127.0.0.1:3099/jarvis/')) unexpected.push(r.url()); });
-  await page.goto('./');
-  await expect(page.getByRole('region', {name:'Preview information'})).toBeVisible();
-  await expect(page.locator('input[type=password]')).toHaveCount(0);
-  const send = async (text: string) => { await page.getByLabel('Ask JARVIS').fill(text); await page.getByRole('button',{name:'Send command'}).click(); };
-  await send('add task <img src=x onerror=alert(1)>');
-  await expect(page.getByRole('button',{name:'Complete <img src=x onerror=alert(1)>',exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Delete <img src=x onerror=alert(1)>',exact:true}).click();
-  await send('timer 2 seconds');
-  await expect(page.locator('.notice').filter({hasText:'2 seconds timer'})).toBeVisible({timeout:10000});
-  await page.getByRole('button',{name:'Open sensor simulator'}).click();
-  await page.getByRole('button',{name:'occupied',exact:true}).click();
-  await expect(page.locator('.simulation')).toContainText('Test room: occupied');
-  await page.getByRole('button',{name:'Controls',exact:true}).click();
-  await page.getByRole('button',{name:'Pause actions & delivery',exact:true}).click();
-  await page.getByLabel('Change',{exact:true}).selectOption('resume');
-  await page.getByRole('button',{name:'Apply change'}).click();
-  await page.getByRole('button',{name:'Controls',exact:true}).click();
-  await page.getByLabel('Change',{exact:true}).selectOption('revoke');
-  await page.getByRole('button',{name:'Apply change'}).click();
-  await expect(page.getByRole('button',{name:'Complete Explore your JARVIS workspace',exact:true})).toHaveCount(0);
-  await page.getByRole('button',{name:'Controls',exact:true}).click();
-  await page.getByLabel('Change',{exact:true}).selectOption('grant');
-  await page.getByRole('button',{name:'Apply change'}).click();
-  await send('add task Reset check');
-  await expect(page.getByRole('button',{name:'Complete Reset check',exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Reset demo',exact:true}).click();
-  await expect(page.getByRole('button',{name:'Complete Reset check',exact:true})).toHaveCount(0);
-  await expect(page.getByRole('button',{name:'Complete Explore your JARVIS workspace',exact:true})).toBeVisible();
-  await page.screenshot({path:'artifacts/pages-desktop.png',fullPage:true});
-  await page.setViewportSize({width:390,height:844});
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  expect(await page.evaluate(()=>[localStorage.length,sessionStorage.length])).toEqual([0,0]);
-  await page.screenshot({path:'artifacts/pages-mobile.png',fullPage:true});
-  for (const width of [320, 768, 1024]) {
-    await page.setViewportSize({width,height:900});
-    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-    await expect(page.getByLabel('Ask JARVIS')).toBeVisible();
-    await expect(page.getByRole('button',{name:'Controls',exact:true})).toBeVisible();
-  }
-  await expect(page.locator('.core-display')).toHaveAttribute('aria-hidden','true');
-  expect(unexpected).toEqual([]); expect(errors).toEqual([]);
-});
-
+import { openTool } from './spatial-helpers.ts';
 test('public microphone meter requires permission, releases tracks and makes no audio requests', async ({ page }) => {
   const errors: string[] = [], requests: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
@@ -65,6 +19,7 @@ test('public microphone meter requires permission, releases tracks and makes no 
     } });
   });
   await page.goto('./');
+  await openTool(page, 'Microphone');
   const panel = page.getByRole('region', { name: 'Microphone test' });
   await expect(panel).toBeVisible();
   expect(await page.evaluate(() => (window as unknown as { publicMic: { calls: number } }).publicMic.calls)).toBe(0);
@@ -100,28 +55,89 @@ test('public microphone meter requires permission, releases tracks and makes no 
 });
 
 
-test('command center has keyboard navigation, inline validation and an explicit mic shortcut', async ({ page }) => {
+test('floating icons drag, hide, restore, open sample tools and animate without a backend', async ({ page }) => {
+  const errors: string[] = [], requests: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
   await page.goto('./');
+  page.on('request', r => requests.push(r.url()));
+  const tools = page.getByRole('navigation', { name: 'Floating tools' });
+  await expect(tools.getByRole('button')).toHaveCount(14);
+  await expect(page.locator('.hud-panel')).toBeHidden();
+  await page.screenshot({ path: 'artifacts/floating-desktop.png' });
+  const email = tools.getByRole('button', { name: 'Email', exact: true });
+  const before = (await email.boundingBox())!;
+  await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+  await page.mouse.down(); await page.mouse.move(before.x - 70, before.y - 50, { steps: 8 }); await page.mouse.up();
+  expect((await email.boundingBox())!.x).toBeLessThan(before.x - 30);
+  await expect(page.locator('.hud-panel')).toBeHidden();
+  await email.focus(); const x = (await email.boundingBox())!.x;
+  await page.keyboard.press('ArrowRight'); expect((await email.boundingBox())!.x).toBeGreaterThan(x);
+  await page.keyboard.press('Delete'); await expect(email).toHaveCount(0);
+  await openTool(page, 'Commands'); await page.getByLabel('Ask JARVIS').fill('bring email back'); await page.getByRole('button', { name: 'Send command', exact: true }).click();
+  await expect(email).toHaveCount(1);
+  await expect(page.getByText('No email account connected.', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Full message', exact: true }).click();
+  await expect(page.locator('.sample-email [role=status]')).toContainText('fictional example');
+  await page.screenshot({ path: 'artifacts/floating-email.png' });
+  await page.getByRole('button', { name: 'Expand panel', exact: true }).click();
+  await expect(page.locator('.hud-panel')).toHaveClass(/is-expanded/);
+  await page.getByRole('button', { name: 'Restore panel size', exact: true }).click();
+  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.getByRole('button', { name: 'Preview waves', exact: true }).click();
+  const ring = page.locator('.reactive-rings circle'); const first = await ring.getAttribute('r');
+  await expect.poll(() => ring.getAttribute('r')).not.toBe(first);
+  await page.screenshot({ path: 'artifacts/floating-waves.png' });
+  await page.getByRole('button', { name: 'Stop preview', exact: true }).click();
+  await expect(ring).toHaveAttribute('r', '135');
+  await openTool(page, 'Tasks & reminders');
   await page.getByRole('button', { name: 'Add', exact: true }).click();
   await expect(page.getByLabel('Task title')).toBeFocused();
-  await expect(page.getByLabel('Task title')).toHaveAttribute('aria-invalid', 'true');
-  await expect(page.getByRole('alert')).toContainText('Please fill in this field');
-  await page.getByLabel('Task title').fill('Keyboard test');
-  await expect(page.getByRole('alert')).toHaveCount(0);
-  await page.getByLabel('Task title').press('Enter');
-  await expect(page.getByRole('button', { name: 'Complete Keyboard test', exact: true })).toBeVisible();
-  await page.setViewportSize({ width: 390, height: 844 });
-  const nav = page.getByRole('navigation', { name: 'Workspace' });
-  await nav.getByRole('link', { name: 'Timers', exact: true }).click();
-  await expect(nav.getByRole('link', { name: 'Timers', exact: true })).toHaveAttribute('aria-current', 'location');
-  await expect(page).toHaveURL(/#timers$/);
-  await page.getByRole('link', { name: 'Test your microphone', exact: true }).click();
-  await expect(page.getByRole('region', { name: 'Microphone test' }).getByRole('status')).toHaveText('Microphone is off.');
-  expect(await page.locator('html').evaluate(el => getComputedStyle(el).scrollbarColor)).not.toBe('auto');
-  for (const width of [320, 390, 768, 1024]) {
-    await page.setViewportSize({ width, height: 844 });
-    const height = await page.getByRole('button', { name: 'Send command' }).evaluate(el => el.getBoundingClientRect().height);
-    expect(height).toBeGreaterThanOrEqual(44);
+  await page.getByLabel('Task title').fill('<img src=x onerror=alert(1)>'); await page.getByRole('button', { name: 'Add', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Complete <img src=x onerror=alert(1)>', exact: true })).toBeVisible();
+  await expect(page.locator('.item img')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Delete <img src=x onerror=alert(1)>', exact: true }).click();
+  await openTool(page, 'Timers'); await page.getByRole('button', { name: '15 MIN', exact: true }).click();
+  await expect(page.locator('.timer-row').filter({ hasText: '15 minutes timer' })).toBeVisible();
+  await openTool(page, 'Commands'); await page.getByLabel('Ask JARVIS').fill('add task Mobile test'); await page.getByRole('button', { name: 'Send command' }).click();
+  await openTool(page, 'Tasks & reminders'); await expect(page.getByRole('button', { name: 'Complete Mobile test', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Close panel' }).click();
+  for (const width of [320,390,768,1024]) {
+    await page.setViewportSize({ width, height:844 });
+    await page.getByRole('button', { name: 'Restore icons and reset layout' }).click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    for(const box of await tools.getByRole('button').evaluateAll(els => els.map(el => ({x:el.getBoundingClientRect().x,y:el.getBoundingClientRect().y,w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height})))) { expect(box.x).toBeGreaterThanOrEqual(0); expect(box.y).toBeGreaterThanOrEqual(0); expect(box.w).toBeGreaterThanOrEqual(44); }
+    await openTool(page, 'Tasks & reminders'); await expect(page.getByLabel('Task title')).toBeVisible();
+    await page.getByRole('button', { name: 'Close panel' }).click();
+    if(width===390) await page.screenshot({path:'artifacts/floating-mobile.png'});
   }
+  expect(await page.evaluate(() => [localStorage.length, sessionStorage.length])).toEqual([0,0]);
+  expect(requests).toEqual([]); expect(errors).toEqual([]);
+});
+
+test('touch drag dismisses and restores tools; Escape cancels movement', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, baseURL });
+  const page = await context.newPage(); await page.goto('./');
+  await page.getByRole('button', { name: 'Controls', exact: true }).tap();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  const email = page.getByRole('navigation', { name: 'Floating tools' }).getByRole('button', { name: 'Email', exact: true });
+  const box = (await email.boundingBox())!;
+  const cdp = await context.newCDPSession(page);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }] });
+  for (let step = 1; step <= 10; step++) {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: box.x + box.width / 2 + (195 - box.x - box.width / 2) * step / 10, y: box.y + box.height / 2 + (825 - box.y - box.height / 2) * step / 10 }] });
+    await page.waitForTimeout(40); // Model a human drag instead of a zero-duration swipe.
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await expect(email).toHaveCount(0);
+  await cdp.detach();
+  await page.getByRole('button', { name: 'Restore icons and reset layout' }).tap();
+  await expect(email).toHaveCount(1);
+  const restored = (await email.boundingBox())!;
+  await page.mouse.move(restored.x + 29, restored.y + 29); await page.mouse.down();
+  await page.mouse.move(200, 300); await page.keyboard.press('Escape'); await page.mouse.up();
+  expect((await email.boundingBox())!.x).toBeCloseTo(restored.x, 0);
+  await expect(page.locator('.hud-panel')).toBeHidden();
+  await context.close();
 });
