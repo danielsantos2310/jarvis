@@ -1,0 +1,110 @@
+---
+version: alpha
+name: JARVIS Command Center
+description: A private home assistant with an original cyan instrument interface and approachable everyday controls.
+colors:
+  primary: '#67e8ff'
+  background: '#030a10'
+  surface: '#0a1822'
+  text: '#e9f7fc'
+  muted: '#a2bac8'
+  border: '#254552'
+  warning: '#ffd18a'
+typography:
+  display:
+    fontFamily: 'Bahnschrift, Arial Narrow, Segoe UI, sans-serif'
+  body:
+    fontFamily: 'Segoe UI, Arial, sans-serif'
+  mono:
+    fontFamily: 'Consolas, monospace'
+rounded:
+  DEFAULT: '6px'
+  panel: '4px'
+spacing:
+  section-gap: '20px'
+  page-max: '1600px'
+components:
+  button:
+    height: '44px'
+  card:
+    rounded: '4px'
+  dialog:
+    rounded: '8px'
+---
+
+# JARVIS design system
+
+## Overview
+
+An Iron Man inspired personal command center, using original concentric instrument rings rather than licensed logos or copied artwork. Daniel uses this product to manage tasks, reminders and timers on a local Windows PC, and review a public sample on an iPhone. The reactor graphic is the signature. Familiar form controls, readable language and clear microphone consent take priority everywhere else.
+
+Product register, English interface, browser timezone. No market or Japanese locale requirement is inferred. Business authority: `docs/milestones/001-local-alpha.md`, `src/shared/contracts.ts`, and the local voice and microphone guides in `docs/development`. Public preview uses sample data; the graphic never represents measured telemetry or identity.
+
+Runtime ownership is Model B: `src/web/hud.css` owns the accepted theme; this document mirrors it. `styles.css` retains structural foundations. No additional competing theme or remotely loaded assets.
+
+## Colors
+
+Near-black background with blue-black panels. Cyan identifies actionable controls, focus and the core artwork; amber marks preview context and warnings. Text uses bright ice white and muted blue-grey. Only dark theme is supported. Forced-colors restores system-operable outlines and scrollbars. Status always includes text.
+
+| Document role | Runtime token | Consumers |
+| --- | --- | --- |
+| primary | --mint | actions, focus, core, waveform |
+| background | --bg | body, entry |
+| surface | --card | base panels |
+| text | --text | content, controls |
+| muted | --muted | supporting text |
+| border | --line | panels, separators |
+| warning | --orange | warning dot, preview |
+| display/body/mono | --font-display / --font-body / --font-mono | headings / content / technical labels |
+| default radius | --radius | controls |
+
+## Typography
+
+System display fonts give headings an instrument-panel feel without font downloads. Segoe UI/Arial carries prose and controls. Consolas carries time and short technical labels. Restrict uppercase and tracking to small labels; keep instructions in sentence case. Mobile command input is 16px to avoid focus zoom. Body hierarchy favors 14–15px text over the prior miniature HUD labels.
+
+## Layout
+
+48px faint grid; a 208px desktop sidebar; 1600px maximum workspace. Desktop reactor sits left of the main command. At tablet widths the reactor stacks above the command. At 680px and below, a visible bottom navigation replaces hidden links, with safe-area padding and clearance after the last content. The top controls remain accessible. Standard gaps are 8, 16, 20, 24 and 32px. Cards flow in one column below 1100px.
+
+## Elevation & Depth
+
+One restrained halo around the core and thin cyan corner marks distinguish the hero. Utility cards have quiet borders and tonal backgrounds. No glowing body text, animated backgrounds or fake charts. Dialog backdrop separates high consequence controls from the workspace.
+
+## Shapes
+
+4px panel corners, 6px input/control corners, 8px dialog corners. The circular core and logo are expressive exceptions. Rings stay decorative and inaccessible to screen readers. Controls retain full rectangular hit areas; no polygon clipping on content.
+
+## Components
+
+Main owns shell, action lifecycle and status; CoreDisplay owns decorative SVG; ReminderForm owns schedule entry; VoiceWaveform owns output visualization; SpeechPanel owns local capture/review/playback; MicrophoneTest owns browser-only metering. Reuse these owners.
+
+Buttons use native semantics with hover, active, focus-visible, disabled and existing busy states; touch controls target at least 44px. Plain navigation anchors jump to sections. The preview notice has native details/summary disclosure. The microphone shortcut navigates only: it never requests permission. Existing permission/auth/server validation and lifecycle contracts remain authoritative.
+
+Select and date ownership is deliberately native in ReminderForm and Controls; browser-owned popup geometry and local date presentation are accepted. The shared Form component owns inline constraint errors, first-invalid-field focus, aria-invalid and error association. The API retains authoritative domain validation. PasswordInput masks by default and provides an accessible reveal toggle. This visual change does not alter recurrence/DST, deletion, permissions or transcript review semantics. Existing browser suites verify them. No new CRUD/table workflow or toast system is introduced.
+
+Scrollbars are global in hud.css: --scroll-thumb, --scroll-track, --scroll-hover; standards properties plus WebKit fallback, with forced-colors reset. The document owns normal scrolling, native dialog owns bounded internal scrolling. Feedback remains inline using existing live regions, banners and responses.
+
+Icons are the existing local 24px SVG stroke set. Visible labels remain on section navigation, including mobile. Voice motion comes from real output data or the explicitly requested silent preview. Core remains static; reduced-motion removes transitions. Avoid continuous decorative motion during work.
+
+## Do's and Don'ts
+
+- Do put the next useful action next to its explanation.
+- Do distinguish local voice, browser microphone meter and simulated sensors in text.
+- Do preserve keyboard semantics, visible focus and readable controls at narrow widths.
+- Don't label the owner as recognized, show fabricated telemetry or imply a model is connected.
+- Don't add Stark branding, external fonts, audio uploads, autoplay or automatic microphone permission.
+
+## Verification and existing debt
+
+Browser coverage: `tests/demo.preview.ts`, `tests/*.e2e.ts`, `tests/pipeline.speech.ts`, microphone suite. Exact executed commands/results are recorded in `docs/testing/command-center-design.md`.
+
+The earlier UI mixed small cyan overrides with mint base styles. This change deliberately replaces the HUD theme as one canonical file; structural CSS remains for untouched flows. Native validation bubbles were replaced through the shared Form owner while preserving required, length and domain constraints.
+
+## Canonical UI Map
+
+| Capability | Canonical owner | Source of truth | Allowed variants | Verification |
+| --- | --- | --- | --- | --- |
+| Select/Listbox | Native select in ReminderForm and Controls | DESIGN.md and existing action contracts | native | Existing browser schedule and control flows |
+| Date | Native datetime-local in ReminderForm | Schedule contract and DESIGN.md | native | Recurrence/DST browser workflow |
+| Form | src/web/Form.tsx | Native constraints plus server schemas | login, control, task, command | Browser error, focus, and successful submit |
+| Scrollbar | src/web/hud.css | Runtime CSS tokens mirrored here | global; forced-colors system | Browser computed style |

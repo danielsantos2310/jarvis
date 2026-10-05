@@ -1,3 +1,4 @@
+import { Form } from './Form.tsx';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { Action } from '../shared/contracts.ts';
@@ -38,7 +39,7 @@ export function ReminderForm({ disabled, create, preview, demo = false }: Props)
       setTitle(''); setSchedule(old => ({ ...old, localStart: '', frequency: 'once' })); setResult(null); setError('');
     }
   }
-  return <form className="task-form" onSubmit={submit}>
+  return <Form noValidate className="task-form" onSubmit={submit}>
     <label className="sr-only" htmlFor="task-title">Task title</label>
     <input id="task-title" placeholder="What would you like to remember?" required maxLength={160} value={title} onChange={e => setTitle(e.target.value)}/>
     <button className="primary" disabled={disabled || waiting || (!!schedule.localStart && !ready)}>Add</button>
@@ -69,5 +70,5 @@ export function ReminderForm({ disabled, create, preview, demo = false }: Props)
       </div>}
       <p className="fineprint">Repeats use this time zone, even when your PC travels. One inbox entry per reminder updates to the latest due occurrence; dismissing it keeps the repeat running.</p>
     </div>}
-  </form>;
+  </Form>;
 }
