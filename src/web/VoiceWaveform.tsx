@@ -1,3 +1,4 @@
+import { CoreDisplay } from './CoreDisplay.tsx';
 import { useEffect, useRef, useState } from 'react';
 
 /** Output visualization only. Pass the speech player's analyser and playing state;
@@ -5,6 +6,8 @@ import { useEffect, useRef, useState } from 'react';
 export function VoiceWaveform({ analyser, speaking = false, connected = false }: { analyser?: AnalyserNode; speaking?: boolean; connected?: boolean }) {
   const [preview, setPreview] = useState(false);
   const paths = useRef<(SVGPathElement | null)[]>([]);
+  const halo = useRef<SVGCircleElement | null>(null);
+  const spokes = useRef<SVGPathElement | null>(null);
   const active = speaking || preview;
   useEffect(() => {
     if (!preview) return;
@@ -22,6 +25,15 @@ export function VoiceWaveform({ analyser, speaking = false, connected = false }:
       if (time - last >= 32 || !active || reduced) {
         last = time;
         if (active && analyser && data) analyser.getByteTimeDomainData(data);
+        const energy = active ? data && speaking ? Math.min(1, Math.sqrt(data.reduce((total, v) => total + ((v - 128) / 128) ** 2, 0) / data.length) * 4) : .35 + .25 * Math.sin(time / 170) : 0;
+        halo.current?.setAttribute('r', String(135 + energy * 18));
+        halo.current?.setAttribute('stroke-width', String(1 + energy * 3));
+        spokes.current?.setAttribute('d', Array.from({ length: 80 }, (_, i) => {
+          const angle = i / 80 * Math.PI * 2;
+          const sample = data && speaking ? Math.abs((data[i % data.length] - 128) / 128) : Math.abs(Math.sin(i * .7 + time / 150));
+          const inner = 151, outer = inner + 3 + (active ? sample * 23 + energy * 12 : 0);
+          return `M${180 + Math.cos(angle) * inner},${180 + Math.sin(angle) * inner}L${180 + Math.cos(angle) * outer},${180 + Math.sin(angle) * outer}`;
+        }).join(' '));
         paths.current.forEach((path, layer) => {
           const points = Array.from({ length: 121 }, (_, i) => {
             const x = i * 5, envelope = Math.pow(Math.sin(Math.PI * i / 120), 1.5);
@@ -42,11 +54,12 @@ export function VoiceWaveform({ analyser, speaking = false, connected = false }:
     return () => { cancelAnimationFrame(frame); preference.removeEventListener('change', restart); document.removeEventListener('visibilitychange', restart); };
   }, [active, analyser, speaking]);
   return <section className={`voice-output ${active ? 'voice-output-active' : ''}`} aria-label="JARVIS voice visualization">
+    <div className="reactor-art"><CoreDisplay/><svg className="reactive-rings" viewBox="0 0 360 360" aria-hidden="true"><circle ref={halo} cx="180" cy="180" r="135"/><path ref={spokes}/></svg></div>
     <div className="voice-output-heading"><span>VOICE OUTPUT</span><span role="status">{speaking ? 'JARVIS speaking' : preview ? 'Waveform preview · silent' : connected ? 'Standby · microphone off' : 'Standby · speech not connected'}</span></div>
-    <svg viewBox="0 0 600 96" preserveAspectRatio="none" aria-hidden="true">
+    <svg className="speech-wave" viewBox="0 0 600 96" preserveAspectRatio="none" aria-hidden="true">
       <path className="voice-baseline" d="M0 48H600"/>
       {[0, 1, 2].map(layer => <path key={layer} ref={element => { paths.current[layer] = element; }} className={`voice-wave voice-wave-${layer}`} d="M0 48H600"/>)}
     </svg>
-    <div className="voice-output-footer"><span>{preview ? 'Design preview only — no audio or microphone' : 'Cyan waves will follow JARVIS’s voice'}</span><button type="button" disabled={speaking} aria-pressed={preview} onClick={() => setPreview(value => !value)}>{preview ? 'Stop preview' : 'Preview waves'}</button></div>
+    <div className="voice-output-footer"><span>{preview ? 'Design preview only — no audio or microphone' : 'Cyan waves will follow JARVIS’s voice'}</span><button className="reactor-preview" title={preview ? 'Stop silent wave preview' : 'Preview voice waves (silent)'} aria-label={preview ? 'Stop preview' : 'Preview waves'} type="button" disabled={speaking} aria-pressed={preview} onClick={() => setPreview(value => !value)}>{preview ? 'Stop preview' : 'Preview waves'}</button></div>
   </section>;
 }

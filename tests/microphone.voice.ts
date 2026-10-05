@@ -1,3 +1,4 @@
+import { openTool } from './spatial-helpers.ts';
 import { test, expect } from '@playwright/test';
 test('microphone requires a click, handles denial/cancel, and stops on timeout and lock',async({page})=>{
   const errors:string[]=[]; page.on('pageerror',e=>errors.push(e.message));
@@ -22,6 +23,7 @@ test('microphone requires a click, handles denial/cancel, and stops on timeout a
   await page.getByLabel('Password',{exact:true}).fill('Synthetic microphone passphrase');
   await page.getByRole('checkbox').check();
   await page.getByRole('button',{name:'Create workspace'}).click();
+  await openTool(page, 'Microphone');
   const panel=page.getByRole('region',{name:'Microphone test'});
   await expect(panel).toBeVisible();
   const fixture=()=>page.evaluate(()=> (window as unknown as {micFixture:{calls:number;tracks:MediaStreamTrack[]}}).micFixture.calls);
