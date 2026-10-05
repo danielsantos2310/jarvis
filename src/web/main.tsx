@@ -9,14 +9,20 @@ import { SpeechPanel } from './SpeechPanel.tsx';
 import { VoiceWaveform } from './VoiceWaveform.tsx';
 import { FloatingWorkspace } from './FloatingWorkspace.tsx';
 import type { Panel } from './FloatingWorkspace.tsx';
+import { WeatherPanel, MusicPanel } from './ServicePanels.tsx';
 import { EmailPanel } from './EmailPanel.tsx';
 import { MicrophoneTest } from './MicrophoneTest.tsx';
 import { demoRequest } from './demo.ts';
 import { ReminderForm } from './ReminderForm.tsx';
 import type { SchedulePreview } from '../shared/schedule.ts';
 type Auth = { authenticated: boolean; setupRequired: boolean; csrf?: string; expiresAt?: number };
+// Capture and immediately remove OAuth response parameters before any widget can load external content.
+const oauthQuery = new URLSearchParams(location.search);
+const oauthReturn = !__JARVIS_DEMO__ && oauthQuery.has('state') && (oauthQuery.has('code') || oauthQuery.has('error')) ? {code:oauthQuery.get('code'),state:oauthQuery.get('state'),error:oauthQuery.get('error')} : null;
+if (oauthReturn) history.replaceState(null, '', location.pathname);
 const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const errors: Record<string, string> = {
+  GMAIL_SETUP_REQUIRED: 'Set up your Google OAuth client on the local server first.', GMAIL_AUTH_EXPIRED: 'Google authorization expired or did not match this session. Connect Gmail again.', GMAIL_RECONNECT_REQUIRED: 'Gmail access expired or was revoked. Close and reopen Email, then connect again.', GMAIL_PROVIDER_ERROR: 'Google could not complete the request. Retry shortly.', GMAIL_READ_PERMISSION_REQUIRED: 'Google did not grant read access. Connect again and review the requested permission.', GMAIL_MESSAGE_TOO_LARGE: 'This message is too large to load here. Open it in Gmail.', GMAIL_CANCELLED: 'Gmail request cancelled.',
   INVALID_SCHEDULE: 'Check the local date, time zone and repeat settings.',
   NO_SCHEDULE_OCCURRENCE: 'That time does not exist in this zone. Choose the first-valid-time policy or a different date.',
   SCHEDULE_PREVIEW_REQUIRED: 'The schedule no longer matches its preview. Preview the times again before adding it.',
@@ -64,11 +70,11 @@ function App() {
     generation.current++; authRef.current = value; setAuth(value);
     setSnapshot(null); setMessages([]); setCommand(''); setControls(false); setActivePanel(value.authenticated && location.hash === '#microphone-test' ? 'microphone' : null); setOnline(false); setBusy(false);
   }
-  async function api<T>(path: string, body?: unknown): Promise<T> {
+  async function api<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
     if (__JARVIS_DEMO__) return await demoRequest(path, body) as T;
     const requestGeneration = generation.current;
     let response: Response;
-    try { response = await fetch(`/api/${path}`, { method: body === undefined ? 'GET' : 'POST', credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10_000),
+    try { response = await fetch(`/api/${path}`, { method: body === undefined ? 'GET' : 'POST', credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.any([AbortSignal.timeout(path.startsWith('gmail/') ? 30000 : 10000), ...(signal ? [signal] : [])]),
       headers: body === undefined ? {} : { 'Content-Type': 'application/json', 'X-CSRF-Token': authRef.current?.csrf ?? '' },
       body: body === undefined ? undefined : JSON.stringify(body) }); }
     catch { throw new Error('Cannot reach JARVIS. Check the terminal and keep the PC awake.'); }
@@ -79,6 +85,14 @@ function App() {
     }
     return data;
   }
+  const oauth = useRef(oauthReturn);
+  useEffect(() => {
+    if (!auth?.authenticated || !snapshot || !oauth.current) return;
+    const response = oauth.current; oauth.current = null; setActivePanel('email');
+    if (response.error || !response.code) { setError('Google connection was cancelled or denied. You can try again from Email.'); return; }
+    const at = generation.current;
+    void api('gmail/complete', {code:response.code,state:response.state}).then(() => { if (at === generation.current) { setActivePanel(null); setTimeout(() => setActivePanel('email'),0); } }).catch(e => { if (at === generation.current) setError(e.message); });
+  }, [auth, !!snapshot]);
   async function refresh() {
     const at = generation.current; const request = ++snapshotRequest.current;
     try {
@@ -168,7 +182,7 @@ function App() {
       {locking && <p role="status">Workspace hidden. Confirming server sign-out…</p>}
       {error && <p className="error" role="alert">{error}</p>}
       {!auth && error && <button onClick={() => location.reload()}>Retry connection</button>}
-      <p className="entry-note"><Icon kind="lock"/>One PC. One private workspace.<br/>Voice and cloud connections are off.</p>
+      <p className="entry-note"><Icon kind="lock"/>One PC. One private workspace.<br/>Optional services connect only with your permission.</p>
     </div></main>
   </div>;
   return <FloatingWorkspace active={activePanel} onOpen={setActivePanel} onControls={() => setControls(true)} onLock={() => void lock()}
@@ -201,19 +215,19 @@ function App() {
           <p>{snapshot.automaticBackups.state === 'off' ? 'Automatic backups are off for this session.' : snapshot.automaticBackups.state === 'running' ? 'Creating and verifying an automatic backup…' : snapshot.automaticBackups.state === 'attention' ? 'Automatic backup needs attention. Check the recovery drive, free space and host clock. A retry is scheduled.' : 'Automatic daily backups are enabled for this session.'}</p>
           {snapshot.automaticBackups.nextAttemptAt && <p>Next backup check: {timeLabel(snapshot.automaticBackups.nextAttemptAt, 'UTC')} (UTC)</p>}
           {snapshot.recovery.deletionSync === 'synced' && <p>Deletion journal synchronized. Keep this recovery location current when restoring.</p>}
-        </section>}<section className="card system-card"><div className="card-heading"><h2>System at a glance</h2><span className={`dot ${online ? '' : 'warning'}`}/></div><dl><div><dt>{__JARVIS_DEMO__ ? 'Browser simulation' : 'Core & storage'}</dt><dd>{online && snapshot ? 'Ready' : 'Unavailable'}</dd></div><div><dt>Microphone</dt><dd>{__JARVIS_DEMO__ ? 'Manual browser test' : snapshot?.services.voice === 'configured' ? 'Manual voice capture' : 'Manual test below'}</dd></div><div><dt>AI model</dt><dd>Not installed</dd></div><div><dt>Cloud services</dt><dd>Disabled</dd></div><div><dt>Unsolicited suggestions</dt><dd>Off</dd></div></dl><button className="text-button" onClick={() => setShowPresence(!showPresence)}>{showPresence ? 'Hide' : 'Open'} sensor simulator <Icon kind="arrow"/></button>
+        </section>}<section className="card system-card"><div className="card-heading"><h2>System at a glance</h2><span className={`dot ${online ? '' : 'warning'}`}/></div><dl><div><dt>{__JARVIS_DEMO__ ? 'Browser simulation' : 'Core & storage'}</dt><dd>{online && snapshot ? 'Ready' : 'Unavailable'}</dd></div><div><dt>Microphone</dt><dd>{__JARVIS_DEMO__ ? 'Manual browser test' : snapshot?.services.voice === 'configured' ? 'Manual voice capture' : 'Manual test below'}</dd></div><div><dt>AI model</dt><dd>Not installed</dd></div><div><dt>External services</dt><dd>On request · Gmail, YouTube, weather</dd></div><div><dt>Unsolicited suggestions</dt><dd>Off</dd></div></dl><button className="text-button" onClick={() => setShowPresence(!showPresence)}>{showPresence ? 'Hide' : 'Open'} sensor simulator <Icon kind="arrow"/></button>
           {showPresence && <div className="simulation"><span className="tag">SYNTHETIC DATA</span><p>Test room: <strong>{snapshot?.presence.state ?? 'unknown'}</strong></p><div>{(['occupied', 'vacant', 'unknown'] as const).map(state => <button disabled={busy || !online} key={state} onClick={() => void run({ state }, 'synthetic-presence')}>{state}</button>)}</div><small>Expires after 30 seconds. No real sensor, identity inference or recording.</small></div>}
           </section></>,
       activity: <section id="activity" className="card activity"><div className="card-heading"><h2>Recent activity</h2><span className="tag">METADATA ONLY</span></div><div className="activity-list">{snapshot?.audit.map((a, i) => <div key={`${a.at}-${i}`}><span className={`dot ${a.decision === 'denied' ? 'warning' : ''}`}/><strong>{a.action.replaceAll('.', ' ')}</strong><span>{a.decision}</span><time>{new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(a.at)}</time></div>)}</div><p className="fineprint">Task titles and command text are excluded from the audit log.</p></section>,
       microphone: <>{online && snapshot?.grant && !snapshot.paused && (__JARVIS_DEMO__ || snapshot.services.voice !== 'configured') ? activePanel === 'microphone' && <MicrophoneTest publicPreview={__JARVIS_DEMO__}/> : snapshot?.services.voice === 'configured' ? <div id="speech-controls"/> : <p>Microphone unavailable. Check connection and workspace permission in Controls.</p>}</>,
-      email: <EmailPanel/>,
+      email: activePanel === 'email' && online && snapshot?.grant && !snapshot.paused ? <EmailPanel api={api}/> : <p>Resume workspace access to use email.</p>,
       calendar: <section className="card"><h2>Calendar</h2><p className="muted">Local reminders · external calendar not connected</p>{tasks.filter(t => t.dueAt && t.state === 'active').sort((a,b) => a.dueAt! - b.dueAt!).map(t => <div className="notice" key={t.id}><div><strong>{t.title}</strong><small>{timeLabel(t.dueAt!, t.timezone)} · {t.timezone}</small></div></div>)}{!tasks.some(t => t.dueAt && t.state === 'active') && <p>No upcoming local reminders.</p>}<button onClick={() => setActivePanel('tasks')}>Manage reminders</button></section>,
-      weather: <section className="card"><h2>Weather</h2><p className="warning-panel">Weather service not connected.</p><p>The weather widget design is ready for a future provider. No location or live forecast is being retrieved.</p></section>,
-      music: <section className="card"><h2>Music</h2><p className="warning-panel">Music service not connected.</p><p>A future audio integration will provide play, pause and volume here. No account or playback device is connected.</p></section>,
+      weather: activePanel === 'weather' && snapshot?.grant && !snapshot.paused ? <WeatherPanel/> : <p>Resume workspace access to use weather.</p>,
+      music: activePanel === 'music' && snapshot?.grant && !snapshot.paused ? <MusicPanel/> : <p>Resume workspace access to use music.</p>,
       presence: <section className="card"><h2>Presence</h2><p>Sensor state: <strong>{snapshot?.presence.state ?? 'unknown'}</strong></p><span className="tag">SYNTHETIC DATA</span><p>No physical sensor or identity recognition is connected. Presence cannot identify a person or grant access.</p><button onClick={() => { setShowPresence(true); setActivePanel('system'); }}>Open sensor simulator</button></section>,
       home: <section className="card"><h2>Home controls</h2><p className="warning-panel">No home devices connected.</p><p>Future lights and room controls will require explicit device permissions. This widget cannot control your home yet.</p></section>,
       camera: <section className="card"><h2>Camera</h2><p className="warning-panel">Camera access is off.</p><p>No camera stream is requested or recorded. Camera integration needs a separate permission design.</p></section>,
-      help: <section className="card"><h2>Your floating workspace</h2><p>Tap an icon to open its tool. Drag it anywhere, or focus it and use the arrow keys. Drag onto the bottom target or press Delete to hide it. The circular restore button brings every icon back.</p><p>Tap the center to preview the voice waves. The preview is silent. With local speech configured, the center responds to the actual output audio.</p><p>{__JARVIS_DEMO__ ? 'This is a sample preview. Changes reset on reload. Microphone testing is optional and stays in this browser. No email account, AI model or physical sensor is connected.' : 'Runs on your PC. Voice requires local Whisper and Piper; capture is always explicit. Email is not connected.'}</p><p>Try “open email”, “open tasks”, “open timers”, or “close panel” in Commands. Reviewed local voice transcripts can use these same commands.</p><a href="https://github.com/danielsantos2310/jarvis">Project on GitHub</a></section>,
+      help: <section className="card"><h2>Your floating workspace</h2><p>Tap an icon to open its tool. Drag it anywhere, or focus it and use the arrow keys. Double-click or double-tap the icon to hide it. Delete also hides a focused icon. The circular restore button brings every icon back.</p><p>Tap the center to preview the voice waves. The preview is silent. With local speech configured, the center responds to the actual output audio.</p><p>{__JARVIS_DEMO__ ? 'This is a sample preview. Changes reset on reload. Microphone testing is optional and stays in this browser. No email account, AI model or physical sensor is connected.' : 'Runs on your PC. Voice requires local Whisper and Piper; capture is always explicit. Gmail connects only after your authorization and local Google setup.'}</p><p>Try “open email”, “open tasks”, “open timers”, or “close panel” in Commands. Reviewed local voice transcripts can use these same commands.</p><a href="https://github.com/danielsantos2310/jarvis">Project on GitHub</a></section>,
     }}>
     <dialog ref={controlRef} onCancel={event => { event.preventDefault(); setControls(false); }} onClose={event => { if (!event.currentTarget.open) setControls(false); }} aria-labelledby="controls-title"><div className="card-heading"><h2 id="controls-title">Workspace controls</h2><button className="quiet" onClick={() => setControls(false)} aria-label="Close controls">×</button></div><p>Stop pauses new items and reminder delivery. Saved items remain available to inspect and remove.</p><button className="danger" disabled={busy || snapshot?.paused} onClick={() => void run({ change: 'stop' }, 'control')}>Pause actions & delivery</button>
       <Form noValidate key={controls ? 'open' : 'closed'} onSubmit={async e => { e.preventDefault(); const form = e.currentTarget; const data = new FormData(form); if (await run({ change: data.get('change'), password: data.get('password') }, 'control')) { form.reset(); setControls(false); } }}>{!__JARVIS_DEMO__ && <label>Confirm with your password<PasswordInput aria-label="Confirm with your password" name="password" required autoComplete="current-password" minLength={12} maxLength={128}/></label>}<label>Change<select aria-label="Change" name="change"><option value="resume">Resume actions & delivery</option><option value="revoke">Revoke local workspace permission</option><option value="grant">Restore local workspace permission</option></select></label><button className="primary wide" disabled={busy}>Apply change</button></Form>

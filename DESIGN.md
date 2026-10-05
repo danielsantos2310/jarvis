@@ -40,7 +40,7 @@ An Iron Man inspired personal command center, using original concentric instrume
 
 Product register, English interface, browser timezone. No market or Japanese locale requirement is inferred. Business authority: `docs/milestones/001-local-alpha.md`, `src/shared/contracts.ts`, and the local voice and microphone guides in `docs/development`. Public preview uses sample data; the graphic never represents measured telemetry or identity.
 
-Runtime ownership is Model B: `src/web/hud.css` owns the accepted theme; this document mirrors it. `styles.css` retains structural foundations. No additional competing theme or remotely loaded assets.
+Runtime ownership is Model B: `src/web/hud.css` owns the accepted theme; this document mirrors it. `styles.css` retains structural foundations. No competing theme or remote decorative assets. External service content is allowed only after an explicit user request.
 
 ## Colors
 
@@ -78,13 +78,15 @@ One restrained halo around the core and thin cyan corner marks distinguish the h
 
 FloatingWorkspace owns the spatial shell, icon movement/hiding/restoration and panel focus; main owns action lifecycle and status; CoreDisplay owns decorative SVG; ReminderForm owns schedule entry; VoiceWaveform owns output visualization; SpeechPanel owns local capture/review/playback; MicrophoneTest owns browser-only metering. Reuse these owners.
 
-Buttons use native semantics with hover, active, focus-visible, disabled and existing busy states; touch controls target at least 44px. Floating icon buttons open bounded nonmodal panels. Arrow keys offer non-drag movement; Delete hides; Restore returns all tools. Escape cancels a move or closes the panel. The microphone shortcut navigates only: it never requests permission. Existing permission/auth/server validation and lifecycle contracts remain authoritative.
+Buttons use native semantics with hover, active, focus-visible, disabled and existing busy states; touch controls target at least 44px. Floating icon buttons open bounded nonmodal panels after a 360 ms double-tap window. Double-click/double-tap hides; dragging never hides and there is no drop target. Arrow keys offer non-drag movement; Delete hides; Restore returns all tools. Escape cancels a move or closes the panel. The microphone shortcut navigates only: it never requests permission. Existing permission/auth/server validation and lifecycle contracts remain authoritative.
 
 Select and date ownership is deliberately native in ReminderForm and Controls; browser-owned popup geometry and local date presentation are accepted. The shared Form component owns inline constraint errors, first-invalid-field focus, aria-invalid and error association. The API retains authoritative domain validation. PasswordInput masks by default and provides an accessible reveal toggle. This visual change does not alter recurrence/DST, deletion, permissions or transcript review semantics. Existing browser suites verify them. No new CRUD/table workflow or toast system is introduced.
 
 Scrollbars are global in hud.css: --scroll-thumb, --scroll-track, --scroll-hover; standards properties plus WebKit fallback, with forced-colors reset. Tool panels and native dialogs own bounded internal scrolling. Feedback remains inline using existing live regions, banners and responses.
 
-Icons are local SVG symbols inside segmented instrument rings. The user explicitly requested icon-only navigation. VoiceWaveform drives radial spokes, ring amplitude and waves from actual output PCM; the center also offers a clearly identified silent preview. Standby is still, and reduced-motion suppresses continuous animation. Closing the microphone panel releases capture/playback resources. Unconnected services remain explicitly unconnected; fictional email content is labelled.
+Icons are local SVG symbols inside segmented instrument rings. The user explicitly requested icon-only navigation. The `--widget-opacity` token is .5 at rest, with opacity 1 on hover, focus, selection or drag; forced-colors uses opacity 1. Panel backgrounds are 50% opaque with blur, while text stays opaque. VoiceWaveform drives radial spokes, ring amplitude and waves from actual output PCM; the center also offers a clearly identified silent preview. Standby is still, and reduced-motion suppresses continuous animation. Closing the microphone panel releases capture/playback resources. Unconnected services remain explicitly unconnected; fictional email content is labelled.
+
+EmailPanel owns local Gmail connection/read/disconnect state and clears private UI on unmount. ServicePanels owns opt-in YouTube loading and approximate-location weather with cancellation. Neither requests a provider on initial workspace load. Real Gmail is local-only, read-only and session-only; public Email is a labelled sample. See `docs/development/service-connections.md` for service boundaries and configuration.
 
 ## Do's and Don'ts
 

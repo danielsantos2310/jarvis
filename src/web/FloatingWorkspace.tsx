@@ -43,9 +43,19 @@ export function FloatingWorkspace({ active, onOpen, panels, voice, notices, onCo
   const [expanded, setExpanded] = useState(false);
   const [announcement, announce] = useState('');
   const drag = useRef<{ id: string; start: Point; origin: Point; moved: boolean } | null>(null);
+  const tap = useRef<{ id: Panel; at: number; x: number; y: number; timer: ReturnType<typeof setTimeout> } | null>(null);
   const cancelled = useRef(false), panelRef = useRef<HTMLDivElement>(null), opener = useRef<HTMLElement | null>(null);
   const clamp = (p: Point): Point => ({ x: Math.max((innerWidth < 680 ? 32 : 52) / innerWidth * 100, Math.min(100 - (innerWidth < 680 ? 32 : 52) / innerWidth * 100, p.x)), y: Math.max(72 / innerHeight * 100, Math.min(100 - 72 / innerHeight * 100, p.y)) });
   function open(id: Panel | null) { if (id) opener.current = document.activeElement as HTMLElement; onOpen(id); }
+  function cancelTap() { if (tap.current) clearTimeout(tap.current.timer); tap.current = null; }
+  function hide(id: Panel) { cancelTap(); setHidden(old => [...new Set([...old, id])]); if (active === id) { opener.current = null; onOpen(null); } announce(`${items.find(i => i.id === id)?.label} hidden. Restore icons brings it back.`); document.querySelector<HTMLButtonElement>('[aria-label="Restore icons and reset layout"]')?.focus(); }
+  function activate(id: Panel, x: number, y: number, target: HTMLElement) {
+    const previous = tap.current;
+    if (previous?.id === id && performance.now() - previous.at < 360 && Math.hypot(x - previous.x, y - previous.y) < 24) { hide(id); return; }
+    cancelTap();
+    tap.current = { id, at: performance.now(), x, y, timer: setTimeout(() => { tap.current = null; opener.current = target; onOpen(id); }, 360) };
+  }
+  useEffect(() => () => cancelTap(), []);
   useEffect(() => {
     if (active) { setHidden(old => old.filter(id => id !== active)); panelRef.current?.focus(); } else opener.current?.focus();
   }, [active]);
@@ -53,6 +63,7 @@ export function FloatingWorkspace({ active, onOpen, panels, voice, notices, onCo
     const resize = () => setPoints(old => Object.fromEntries(Object.entries(old).map(([key, point]) => [key, clamp(point)])));
     const escape = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || document.querySelector('dialog[open]')) return;
+      cancelTap();
       if (drag.current) { const d = drag.current; setPoints(old => ({ ...old, [d.id]: d.origin })); drag.current = null; cancelled.current = true; setMoving(null); announce('Move cancelled.'); }
       else onOpen(null);
     };
@@ -63,24 +74,24 @@ export function FloatingWorkspace({ active, onOpen, panels, voice, notices, onCo
     <div className="hud-circuit" aria-hidden="true"/>
     <div className="spatial-status"><span className="dot"/><span>{__JARVIS_DEMO__ ? 'PREVIEW' : 'LOCAL'}</span></div>
     <div className="spatial-utilities">
-      <button className="hud-utility" aria-label="Restore icons and reset layout" title="Restore icons and reset layout" onClick={() => { setPoints(defaults()); setHidden([]); announce('All icons restored.'); }}><HudIcon name="restore"/></button>
-      <button className="hud-utility" aria-label="Controls" title="Controls" onClick={onControls}><HudIcon name="settings"/></button>
-      <button className="hud-utility" aria-label={__JARVIS_DEMO__ ? 'Reset demo' : 'Lock workspace'} title={__JARVIS_DEMO__ ? 'Reset demo' : 'Lock workspace'} onClick={onLock}><HudIcon name="lock"/></button>
+      <button className="hud-utility" aria-label="Restore icons and reset layout" title="Restore icons and reset layout" onClick={() => { cancelTap(); setPoints(defaults()); setHidden([]); announce('All icons restored.'); }}><HudIcon name="restore"/></button>
+      <button className="hud-utility" aria-label="Controls" title="Controls" onClick={() => {cancelTap();onControls();}}><HudIcon name="settings"/></button>
+      <button className="hud-utility" aria-label={__JARVIS_DEMO__ ? 'Reset demo' : 'Lock workspace'} title={__JARVIS_DEMO__ ? 'Reset demo' : 'Lock workspace'} onClick={() => {cancelTap();onLock();}}><HudIcon name="lock"/></button>
     </div>
     <main id="main" className="spatial-stage" aria-label="JARVIS floating workspace">
       <div className="spatial-voice">{voice}</div>
       <nav aria-label="Floating tools">{items.filter(item => !hidden.includes(item.id)).map(item => <button key={item.id}
         className={`floating-tool ${moving === item.id ? 'is-moving' : ''}`} style={{ left: `${points[item.id].x}%`, top: `${points[item.id].y}%` }}
-        aria-label={item.label} title={`${item.label} · drag to move; arrow keys also move; Delete hides`} aria-describedby="move-instructions" aria-pressed={active === item.id}
+        aria-label={item.label} title={`${item.label} · drag to move; double-click or double-tap to hide; Delete also hides`} aria-describedby="move-instructions" aria-pressed={active === item.id}
         onPointerDown={e => { if (e.button !== 0) return; cancelled.current = false; drag.current = { id: item.id, start: { x: e.clientX, y: e.clientY }, origin: points[item.id], moved: false }; e.currentTarget.setPointerCapture(e.pointerId); }}
-        onPointerMove={e => { const d = drag.current; if (!d || d.id !== item.id) return; const dx = e.clientX - d.start.x, dy = e.clientY - d.start.y; if (Math.hypot(dx, dy) > 6) { d.moved = true; setMoving(item.id); } if (d.moved) setPoints(old => ({ ...old, [item.id]: clamp({ x: d.origin.x + dx / innerWidth * 100, y: d.origin.y + dy / innerHeight * 100 }) })); }}
-        onPointerUp={e => { const d = drag.current; if (!d) return; cancelled.current = d.moved; if (d.moved) { if (e.clientY > innerHeight - 64 && Math.abs(e.clientX - innerWidth / 2) < 90) { setTimeout(() => setHidden(old => [...old, item.id]), 0); announce(`${item.label} hidden. Use Restore icons to bring it back.`); } else announce(`${item.label} moved.`); } drag.current = null; setMoving(null); }}
-        onPointerCancel={() => { const d = drag.current; if (d) setPoints(old => ({ ...old, [d.id]: d.origin })); drag.current = null; cancelled.current = true; setMoving(null); }}
-        onClick={() => { if (cancelled.current) { cancelled.current = false; return; } open(item.id); }}
-        onKeyDown={e => { const step = e.shiftKey ? 5 : 1; const deltas: Record<string, Point> = { ArrowLeft: { x: -step, y: 0 }, ArrowRight: { x: step, y: 0 }, ArrowUp: { x: 0, y: -step }, ArrowDown: { x: 0, y: step } }; const delta = deltas[e.key]; if (delta) { e.preventDefault(); setPoints(old => ({ ...old, [item.id]: clamp({ x: old[item.id].x + delta.x, y: old[item.id].y + delta.y }) })); announce(`${item.label} moved.`); } if (e.key === 'Delete') { e.preventDefault(); setHidden(old => [...old, item.id]); announce(`${item.label} hidden.`); document.querySelector<HTMLButtonElement>('[aria-label="Restore icons and reset layout"]')?.focus(); } }}>
+        onPointerMove={e => { const d = drag.current; if (!d || d.id !== item.id) return; const dx = e.clientX - d.start.x, dy = e.clientY - d.start.y; if (Math.hypot(dx, dy) > 6) { cancelTap(); d.moved = true; setMoving(item.id); } if (d.moved) setPoints(old => ({ ...old, [item.id]: clamp({ x: d.origin.x + dx / innerWidth * 100, y: d.origin.y + dy / innerHeight * 100 }) })); }}
+        onPointerUp={e => { const d = drag.current; if (!d) return; cancelled.current = true; if (d.moved) announce(`${item.label} moved.`); else activate(item.id, e.clientX, e.clientY, e.currentTarget); drag.current = null; setMoving(null); }}
+        onPointerCancel={() => { cancelTap(); const d = drag.current; if (d) setPoints(old => ({ ...old, [d.id]: d.origin })); drag.current = null; cancelled.current = true; setMoving(null); }}
+        onClick={e => { if (e.detail === 0) { cancelTap(); open(item.id); } }} onDoubleClick={e => e.preventDefault()}
+        onKeyDown={e => { const step = e.shiftKey ? 5 : 1; const deltas: Record<string, Point> = { ArrowLeft: { x: -step, y: 0 }, ArrowRight: { x: step, y: 0 }, ArrowUp: { x: 0, y: -step }, ArrowDown: { x: 0, y: step } }; const delta = deltas[e.key]; if (delta) { e.preventDefault(); setPoints(old => ({ ...old, [item.id]: clamp({ x: old[item.id].x + delta.x, y: old[item.id].y + delta.y }) })); announce(`${item.label} moved.`); } if (e.key === 'Delete') { e.preventDefault(); hide(item.id); } }}>
         <HudIcon name={item.id}/><span className="hud-tooltip">{item.label}</span>
       </button>)}</nav>
-      <p id="move-instructions" className="sr-only">Drag an icon, or focus it and use arrow keys to move. Enter opens it. Delete hides it. Restore icons brings all tools back.</p>
+      <p id="move-instructions" className="sr-only">Drag an icon, or focus it and use arrow keys to move. Tap once or press Enter to open. Double-click, double-tap or press Delete to hide. Restore icons brings all tools back.</p>
       <div className="spatial-notices">{notices}</div>
       <div className={`hud-panel ${expanded ? 'is-expanded' : ''}`} hidden={!active} ref={panelRef} tabIndex={-1} role="region" aria-label={items.find(i => i.id === active)?.label ?? 'Tool panel'}>
         <button className="hud-panel-expand hud-utility" aria-label={expanded ? 'Restore panel size' : 'Expand panel'} title={expanded ? 'Restore panel size' : 'Expand panel'} onClick={() => setExpanded(v => !v)}><HudIcon name="expand"/></button>
@@ -88,7 +99,6 @@ export function FloatingWorkspace({ active, onOpen, panels, voice, notices, onCo
         {items.map(item => <div key={item.id} hidden={active !== item.id}>{panels[item.id]}</div>)}
       </div>
     </main>
-    {moving && <div className="discard-target" role="status">Drop here to hide</div>}
     <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
     {children}
   </div>;

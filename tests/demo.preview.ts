@@ -115,7 +115,7 @@ test('floating icons drag, hide, restore, open sample tools and animate without 
   expect(requests).toEqual([]); expect(errors).toEqual([]);
 });
 
-test('touch drag dismisses and restores tools; Escape cancels movement', async ({ browser, baseURL }) => {
+test('touch drag moves; double tap hides and restores tools; Escape cancels movement', async ({ browser, baseURL }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, baseURL });
   const page = await context.newPage(); await page.goto('./');
   await page.getByRole('button', { name: 'Controls', exact: true }).tap();
@@ -130,8 +130,11 @@ test('touch drag dismisses and restores tools; Escape cancels movement', async (
     await page.waitForTimeout(40); // Model a human drag instead of a zero-duration swipe.
   }
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await expect(email).toHaveCount(0);
+  await expect(email).toHaveCount(1);
+  await expect(page.getByText('Drop here to hide')).toHaveCount(0);
   await cdp.detach();
+  await email.tap(); await email.tap();
+  await expect(email).toHaveCount(0);
   await page.getByRole('button', { name: 'Restore icons and reset layout' }).tap();
   await expect(email).toHaveCount(1);
   const restored = (await email.boundingBox())!;
@@ -139,5 +142,68 @@ test('touch drag dismisses and restores tools; Escape cancels movement', async (
   await page.mouse.move(200, 300); await page.keyboard.press('Escape'); await page.mouse.up();
   expect((await email.boundingBox())!.x).toBeCloseTo(restored.x, 0);
   await expect(page.locator('.hud-panel')).toBeHidden();
+  await page.setViewportSize({width:1920,height:1080});
+  await page.getByRole('button',{name:'Restore icons and reset layout'}).tap();
+  await email.tap(); await email.tap();
+  await expect(email).toHaveCount(0);
   await context.close();
+});
+
+test('double-click hides without opening, opacity and keyboard restore remain usable', async ({ page }) => {
+  await page.goto('./');
+  const tools = page.getByRole('navigation', { name: 'Floating tools' });
+  const email = tools.getByRole('button', { name: 'Email', exact: true });
+  expect(await email.evaluate(el => getComputedStyle(el).opacity)).toBe('0.5');
+  await email.dblclick();
+  await expect(email).toHaveCount(0); await expect(page.locator('.hud-panel')).toBeHidden();
+  await page.getByRole('button', { name: 'Restore icons and reset layout' }).click();
+  await email.focus(); await page.keyboard.press('Enter');
+  await expect(page.getByText('No email account connected.', { exact: true })).toBeVisible();
+});
+
+test('weather and YouTube require explicit consent, handle failures, and unload on close', async ({ page }) => {
+  let weatherCalls = 0, youtubeCalls = 0;
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'geolocation', {value: {getCurrentPosition: (ok: (p: unknown) => void) => ok({coords:{latitude:53.349805,longitude:-6.26031}})}});
+  });
+  await page.route('https://api.open-meteo.com/**', async route => {
+    weatherCalls++;
+    const url = new URL(route.request().url()); expect(url.searchParams.get('latitude')).toBe('53.35'); expect(url.searchParams.get('longitude')).toBe('-6.26');
+    if (weatherCalls === 1) await route.fulfill({status:503,body:'Unavailable'});
+    else await route.fulfill({json:{timezone:'Europe/Dublin',current:{temperature_2m:15,apparent_temperature:13,wind_speed_10m:12,relative_humidity_2m:70,weather_code:3,time:'2026-10-05T12:00'}}});
+  });
+  await page.route('https://www.youtube-nocookie.com/**', async route => {youtubeCalls++; await route.fulfill({contentType:'text/html',body:'<p>Fixture player</p>'});});
+  await page.goto('./'); await openTool(page,'Weather'); expect(weatherCalls).toBe(0);
+  await page.getByRole('button',{name:'Use my location for weather'}).click();
+  await expect(page.getByRole('alert')).toContainText('Weather is unavailable');
+  await page.getByRole('button',{name:'Use my location for weather'}).click();
+  await expect(page.locator('.weather-reading')).toHaveText('15°C');
+  await openTool(page,'Music'); expect(youtubeCalls).toBe(0);
+  await page.getByLabel('YouTube link').fill('https://evil.test/watch?v=dQw4w9WgXcQ');
+  await page.getByRole('button',{name:'Load YouTube player'}).click();
+  await expect(page.getByRole('alert')).toContainText('HTTPS YouTube'); expect(youtubeCalls).toBe(0);
+  await page.getByLabel('YouTube link').fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  await page.getByRole('button',{name:'Load YouTube player'}).click();
+  await expect(page.locator('iframe')).toHaveAttribute('src','https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0');
+  await expect.poll(() => youtubeCalls).toBe(1);
+  await page.screenshot({path:'artifacts/services-music.png'});
+  await page.getByRole('button',{name:'Close panel'}).click(); await expect(page.locator('iframe')).toHaveCount(0);
+});
+
+test('weather denial is recoverable and late location after closing sends nothing', async ({ page }) => {
+  let requests = 0;
+  await page.route('https://api.open-meteo.com/**', async route => {requests++;await route.abort();});
+  await page.addInitScript(() => {
+    const state = window as unknown as { deny: boolean; resolveLocation?: (point: unknown) => void }; state.deny = true;
+    Object.defineProperty(navigator,'geolocation',{value:{getCurrentPosition:(ok:(point:unknown)=>void,fail:()=>void)=>{if(state.deny) fail();else state.resolveLocation=ok;}}});
+  });
+  await page.goto('./'); await openTool(page,'Weather');
+  await page.getByRole('button',{name:'Use my location for weather'}).click();
+  await expect(page.getByRole('alert')).toContainText('denied or unavailable');
+  await page.evaluate(() => {(window as unknown as {deny:boolean}).deny=false;});
+  await page.getByRole('button',{name:'Use my location for weather'}).click();
+  await expect(page.getByRole('button',{name:'Finding your weather…'})).toBeDisabled();
+  await page.getByRole('button',{name:'Close panel'}).click();
+  await page.evaluate(() => {(window as unknown as {resolveLocation:(point:unknown)=>void}).resolveLocation({coords:{latitude:53.35,longitude:-6.26}});});
+  expect(requests).toBe(0);
 });
