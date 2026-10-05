@@ -121,7 +121,7 @@ export function SpeechPanel({ csrf, onTranscript, reply }: { csrf: string; onTra
       setPhase('speaking'); setMessage('JARVIS is speaking. The waves follow the actual output audio.'); source.start();
     } catch (e) { if (at === generation.current) stop((e as Error).message); }
   }
-  return <section className="speech-panel" aria-label="Local voice session">
+  return <section className="speech-panel" id="voice-session" aria-label="Local voice session">
     <VoiceWaveform analyser={analyser} speaking={phase === 'speaking'} connected={status.tts}/>
     <div className="card microphone-test">
       <div className="card-heading"><h2>Talk to JARVIS</h2><span className="tag">{phase === 'listening' ? 'MIC ACTIVE' : 'MIC OFF'}</span></div>

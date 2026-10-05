@@ -19,6 +19,8 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
   await page.getByRole('checkbox').check(); await page.getByRole('button', { name: 'Create workspace' }).click();
   const panel = page.getByRole('region', { name: 'Local voice session' }); await expect(panel).toBeVisible();
   expect(transcriptions).toBe(0);
+  await expect(page.getByRole('region', { name: 'Microphone test' })).toHaveCount(0);
+  await expect(page.locator('.command-note')).toContainText('Local voice panel below');
   await panel.getByRole('button', { name: 'Check voice engines' }).click();
   await expect(panel.getByRole('button', { name: 'Start voice capture' })).toBeEnabled();
   await panel.getByRole('button', { name: 'Start voice capture' }).click();

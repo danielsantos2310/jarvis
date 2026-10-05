@@ -1,0 +1,8 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": ["src/web"],
+  "locale": "en",
+  "canonicalMap": "DESIGN.md",
+  "requiredCapabilities": ["Select/Listbox", "Date", "Form", "Scrollbar"],
+  "ownership": {"Select/Listbox": "native", "Date": "native", "Form": "src/web/Form.tsx", "Scrollbar": "src/web/hud.css"}
+}

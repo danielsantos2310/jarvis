@@ -98,3 +98,30 @@ test('public microphone meter requires permission, releases tracks and makes no 
   expect(await released()).toBe(true);
   expect(requests).toEqual([]); expect(errors).toEqual([]);
 });
+
+
+test('command center has keyboard navigation, inline validation and an explicit mic shortcut', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+  await expect(page.getByLabel('Task title')).toBeFocused();
+  await expect(page.getByLabel('Task title')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.getByRole('alert')).toContainText('Please fill in this field');
+  await page.getByLabel('Task title').fill('Keyboard test');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await page.getByLabel('Task title').press('Enter');
+  await expect(page.getByRole('button', { name: 'Complete Keyboard test', exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  const nav = page.getByRole('navigation', { name: 'Workspace' });
+  await nav.getByRole('link', { name: 'Timers', exact: true }).click();
+  await expect(nav.getByRole('link', { name: 'Timers', exact: true })).toHaveAttribute('aria-current', 'location');
+  await expect(page).toHaveURL(/#timers$/);
+  await page.getByRole('link', { name: 'Test your microphone', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Microphone test' }).getByRole('status')).toHaveText('Microphone is off.');
+  expect(await page.locator('html').evaluate(el => getComputedStyle(el).scrollbarColor)).not.toBe('auto');
+  for (const width of [320, 390, 768, 1024]) {
+    await page.setViewportSize({ width, height: 844 });
+    const height = await page.getByRole('button', { name: 'Send command' }).evaluate(el => el.getBoundingClientRect().height);
+    expect(height).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+});
