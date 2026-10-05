@@ -21,7 +21,8 @@ try {
   if (automatic && !recoveryState(store.db)) throw new Error('RECOVERY_NOT_CONFIGURED');
   if (automatic) backups = await AutomaticBackups.unlock(store, data.database, await unlockBackupPassword());
   const code = randomBytes(24).toString('base64url');
-  const app = await createApp({ speech: process.argv.includes('--voice') ? localSpeech(Number(process.env.JARVIS_STT_PORT ?? 10300), Number(process.env.JARVIS_TTS_PORT ?? 10200)) : undefined, store, port, bootstrapCode: code, automaticBackupStatus: () => backups?.status() ?? { state: 'off', nextAttemptAt: null } });
+  const gmail = process.env.JARVIS_GOOGLE_CLIENT_ID && process.env.JARVIS_GOOGLE_CLIENT_SECRET ? { clientId: process.env.JARVIS_GOOGLE_CLIENT_ID, clientSecret: process.env.JARVIS_GOOGLE_CLIENT_SECRET } : undefined;
+  const app = await createApp({ gmail, speech: process.argv.includes('--voice') ? localSpeech(Number(process.env.JARVIS_STT_PORT ?? 10300), Number(process.env.JARVIS_TTS_PORT ?? 10200)) : undefined, store, port, bootstrapCode: code, automaticBackupStatus: () => backups?.status() ?? { state: 'off', nextAttemptAt: null } });
   await app.listen({ host: '127.0.0.1', port });
   backups?.start();
   console.log(`JARVIS local alpha: http://127.0.0.1:${port}`);

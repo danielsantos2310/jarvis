@@ -6,6 +6,6 @@ export default defineConfig(({ mode }) => ({
   esbuild: { jsx: 'automatic' },
   build: { outDir: mode === 'demo' ? '../../dist-demo' : '../../dist', emptyOutDir: true },
   plugins: mode === 'demo' ? [{ name: 'static-demo-policy', generateBundle() { this.emitFile({type:'asset', fileName:'.nojekyll', source:''}); }, transformIndexHtml(html: string) {
-    return html.replace('<title>JARVIS · Local workspace</title>', '<title>JARVIS · Interactive preview</title><meta name="robots" content="noindex"/><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'self\'; style-src \'self\'; img-src \'self\' data:; font-src \'self\'; connect-src \'none\'; base-uri \'self\'; form-action \'none\'; object-src \'none\'"/>');
+    return html.replace('<title>JARVIS · Local workspace</title>', '<title>JARVIS · Interactive preview</title><meta name="robots" content="noindex"/><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'self\'; style-src \'self\'; img-src \'self\' data:; font-src \'self\'; connect-src https://api.open-meteo.com; frame-src https://www.youtube-nocookie.com; base-uri \'self\'; form-action \'none\'; object-src \'none\'"/>');
   } }] : [],
 }));

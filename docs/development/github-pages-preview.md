@@ -2,7 +2,7 @@
 
 This is a static, sample-data preview of the M1 dashboard. It runs in browser memory. Tasks, short reminders, timers, permission/pause controls and synthetic presence can be tried without a local installation. Reload or Reset demo restores the sample workspace. Calendar recurrence, authentication, backups, voice, AI models and real devices require the local application or future work; they are not provided by this preview.
 
-Use sample information only. There is no browser storage, analytics or backend connection. The preview CSP disallows network connections (`connect-src 'none'`). GitHub serves the static files and receives normal page requests. The local build still uses the authenticated loopback backend.
+Use sample information only for workspace and email. There is no JARVIS browser storage, analytics or backend connection. Weather is an explicit opt-in: device coordinates rounded to two decimal places are sent to Open-Meteo. YouTube embeds load only after the user submits a video/playlist link. CSP permits only Open-Meteo connections and YouTube privacy-enhanced frames in addition to static assets. Those providers receive the requests you initiate and have their own privacy policies. GitHub receives normal page requests. Gmail OAuth and real email reading are local-build-only, using the authenticated loopback backend.
 
 ## Build and verify
 

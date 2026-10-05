@@ -1,3 +1,4 @@
+import { GmailService, type GmailConfig } from './gmail.ts';
 import Fastify from 'fastify';
 import type { SpeechService } from './voice.ts';
 import type { FastifyRequest } from 'fastify';
@@ -22,10 +23,12 @@ declare module 'fastify' {
   interface Session { ownerId?: string; household?: string; epoch?: number; csrf?: string; authUntil?: number }
   interface FastifyRequest { actor: Owner | null }
 }
-export interface AppOptions { speech?: SpeechService; store: Store; port?: number; bootstrapCode: string; now?: () => number; serveWeb?: boolean; scheduler?: boolean; automaticBackupStatus?: () => AutomaticBackupStatus }
+export interface AppOptions { gmail?: GmailConfig; gmailFetch?: typeof fetch; speech?: SpeechService; store: Store; port?: number; bootstrapCode: string; now?: () => number; serveWeb?: boolean; scheduler?: boolean; automaticBackupStatus?: () => AutomaticBackupStatus }
 export async function createApp(options: AppOptions) {
   const store = options.store; const now = options.now ?? Date.now;
   const port = options.port ?? 3000; const origin = `http://127.0.0.1:${port}`;
+  const gmail = new GmailService(options.gmail, origin, now, options.gmailFetch);
+  const gmailExpiry = setInterval(() => gmail.prune(), 30000); gmailExpiry.unref();
   const started = now();
   let authBusy = false;
   let schedulerHealthy = true;
@@ -36,11 +39,11 @@ export async function createApp(options: AppOptions) {
   app.addHook('onRequest', async (req, reply) => {
     reply.header('Cache-Control', 'no-store').header('X-Content-Type-Options', 'nosniff')
       .header('Referrer-Policy', 'no-referrer').header('X-Frame-Options', 'DENY')
-      .header('Permissions-Policy', 'microphone=(self), camera=(), geolocation=()')
-      .header('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; object-src 'none'");
+      .header('Permissions-Policy', 'microphone=(self), camera=(), geolocation=(self)')
+      .header('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.open-meteo.com; frame-src https://www.youtube-nocookie.com; font-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; object-src 'none'");
     if (req.headers.host !== `127.0.0.1:${port}`) throw new AppError(403, 'HOST_DENIED');
     if (req.headers.origin && req.headers.origin !== origin) throw new AppError(403, 'ORIGIN_DENIED');
-    if (req.headers['sec-fetch-site'] === 'cross-site') throw new AppError(403, 'ORIGIN_DENIED');
+    if (req.headers['sec-fetch-site'] === 'cross-site' && !(req.method === 'GET' && req.url.split('?')[0] === '/')) throw new AppError(403, 'ORIGIN_DENIED');
     if (!['GET', 'HEAD'].includes(req.method)) {
       if (req.headers.origin !== origin) throw new AppError(403, 'ORIGIN_REQUIRED');
       if (req.headers['content-type']?.split(';')[0].trim() !== 'application/json') throw new AppError(415, 'JSON_REQUIRED');
@@ -86,7 +89,7 @@ export async function createApp(options: AppOptions) {
     await req.session.save();
     return { authenticated: true, setupRequired: false, csrf: req.session.csrf, expiresAt: req.session.authUntil };
   }
-  app.get('/api/public', async () => ({ mode: 'local', microphone: 'manual-test', cloud: 'disabled' }));
+  app.get('/api/public', async () => ({ mode: 'local', microphone: 'manual-test', cloud: 'on-request' }));
   app.get('/api/session', async req => {
     const owner = store.owner();
     const valid = owner && req.session.ownerId === owner.id && req.session.household === owner.household &&
@@ -116,6 +119,7 @@ export async function createApp(options: AppOptions) {
       } finally { authBusy = false; }
     });
   app.post('/api/logout', async (req, reply) => {
+    gmail.forget(req.session.csrf ?? '');
     await req.session.destroy(); reply.clearCookie('jarvis_session', { path: '/api' }); return { ok: true };
   });
   app.get('/api/snapshot', async req => {
@@ -123,7 +127,7 @@ export async function createApp(options: AppOptions) {
     const owner = req.actor!;
     if (presence.expiresAt !== null && presence.expiresAt <= now()) presence = { state: 'unknown', synthetic: true, expiresAt: null };
     return { automaticBackups: options.automaticBackupStatus?.() ?? { state: 'off', nextAttemptAt: null }, recovery: store.recoveryStatus(), now: now(), paused: store.paused(), grant: store.canRead(owner), items: store.list(owner), notices: store.notices(owner), presence,
-      services: { core: 'ready', storage: 'ready', voice: options.speech ? 'configured' : 'not-installed', model: 'not-installed', cloud: 'disabled' },
+      services: { core: 'ready', storage: 'ready', voice: options.speech ? 'configured' : 'not-installed', model: 'not-installed', cloud: 'on-request' },
       audit: store.db.prepare('SELECT action,decision,at FROM audit WHERE owner=? ORDER BY id DESC LIMIT 8').all(owner.id) as unknown as Snapshot['audit'],
     } satisfies Snapshot;
   });
@@ -161,7 +165,7 @@ export async function createApp(options: AppOptions) {
       } finally { authBusy = false; }
       if (store.owner()?.epoch !== req.actor!.epoch) throw new AppError(401, 'LOGIN_REQUIRED');
     }
-    store.control(req.actor!, change, now()); return { ok: true };
+    store.control(req.actor!, change, now()); if (change === 'stop' || change === 'revoke') gmail.clear(); return { ok: true };
   });
   app.post<{ Body: { state: 'occupied' | 'vacant' | 'unknown' } }>('/api/synthetic-presence', { schema: { body: {
     type: 'object', additionalProperties: false, required: ['state'], properties: { state: { enum: ['occupied', 'vacant', 'unknown'] } },
@@ -169,6 +173,30 @@ export async function createApp(options: AppOptions) {
     presence = { state: req.body.state, synthetic: true, expiresAt: req.body.state === 'unknown' ? null : now() + 30_000 };
     return presence;
   });
+  const gmailControllers = new Set<AbortController>();
+  function gmailAccess(req: FastifyRequest) {
+    const owner = store.owner();
+    if (!owner || owner.id !== req.session.ownerId || owner.household !== req.session.household || owner.epoch !== req.session.epoch || (req.session.authUntil ?? 0) <= now()) throw new AppError(401, 'LOGIN_REQUIRED');
+    if (!store.canRead(owner)) throw new AppError(403, 'LOCAL_GRANT_REQUIRED');
+    if (store.paused()) throw new AppError(403, 'ACTIONS_PAUSED');
+  }
+  async function gmailJob<T>(req: FastifyRequest, reply: import('fastify').FastifyReply, work: (signal: AbortSignal) => Promise<T>) {
+    gmailAccess(req); const key = req.session.csrf!;
+    if (gmailControllers.size >= 4) throw new AppError(429, 'GMAIL_BUSY');
+    const controller = new AbortController(); gmailControllers.add(controller);
+    const cancel = () => { if (!reply.raw.writableEnded) controller.abort(); }; reply.raw.on('close', cancel);
+    const monitor = setInterval(() => { void req.session.reload().then(() => gmailAccess(req)).catch(() => { controller.abort(); gmail.forget(key); }); }, 250);
+    const timeout = setTimeout(() => controller.abort(), 25000);
+    try { const result = await work(controller.signal); await req.session.reload(); gmailAccess(req); if (controller.signal.aborted) throw new AppError(409, 'GMAIL_CANCELLED'); return result; }
+    finally { clearTimeout(timeout); clearInterval(monitor); reply.raw.off('close', cancel); controller.abort(); gmailControllers.delete(controller); }
+  }
+  app.get('/api/gmail/status', async req => { gmailAccess(req); return gmail.status(req.session.csrf!); });
+  app.post('/api/gmail/connect', async req => { gmailAccess(req); return gmail.start(req.session.csrf!, req.session.authUntil!); });
+  app.post<{Body:{code:string;state:string}}>('/api/gmail/complete', { schema: { body: { type: 'object', additionalProperties: false, required: ['code','state'], properties: { code: {type:'string',minLength:1,maxLength:2048}, state:{type:'string',minLength:32,maxLength:128} } } } }, async (req,reply) => gmailJob(req,reply,signal => gmail.complete(req.session.csrf!,req.body.code,req.body.state,signal)));
+  app.get('/api/gmail/inbox', async (req,reply) => gmailJob(req,reply,signal => gmail.inbox(req.session.csrf!,signal)));
+  app.get<{Params:{id:string}}>('/api/gmail/messages/:id', { schema: { params: { type:'object',required:['id'],properties:{id:{type:'string',pattern:'^[a-fA-F0-9]{1,64}$'}} } } }, async (req,reply) => gmailJob(req,reply,signal => gmail.message(req.session.csrf!,req.params.id,signal)));
+  app.post('/api/gmail/disconnect', async req => gmail.disconnect(req.session.csrf!));
+  app.addHook('preClose', async () => { clearInterval(gmailExpiry); for (const controller of gmailControllers) controller.abort(); gmail.clear(); });
   let voiceBusy = false;
   const voiceControllers = new Set<AbortController>();
   function voiceAccess(req: FastifyRequest) {

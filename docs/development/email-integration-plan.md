@@ -1,6 +1,6 @@
 # Email integration proposal
 
-Current implementation: an unconnected email widget with clearly fictional summary/full-message examples. Opening it, including via “read my email”, grants no permission and reads no account. The public Pages preview has no email backend.
+Updated implementation: the local build now has session-only read-only Gmail OAuth and bounded inbox/plain-text reading. See [service-connections.md](service-connections.md) for setup and security boundaries. The public Pages preview remains a fictional example with no email backend. Opening Email or issuing “read my email” opens the widget, but does not grant permission or automatically fetch an inbox. AI summaries and voice readout of emails are still future work.
 
 Proposed next increment:
 

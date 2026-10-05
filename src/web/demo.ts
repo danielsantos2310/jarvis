@@ -10,7 +10,7 @@ function workspace(): Snapshot {
   state = { now, paused: false, grant: true,
     items: [item('task', 'Explore your JARVIS workspace', null), item('task', 'Plan the first room sensor', null), item('reminder', 'Take a screen break', now + 30 * 60000), item('timer', '5 minutes timer', now + 5 * 60000)],
     notices: [], automaticBackups: { state: 'off', nextAttemptAt: null }, recovery: { configured: false, deletionSync: 'not-configured', lastBackupAt: null },
-    presence: { state: 'unknown', synthetic: true, expiresAt: null }, services: { core: 'ready', storage: 'ready', voice: 'not-installed', model: 'not-installed', cloud: 'disabled' }, audit: [] };
+    presence: { state: 'unknown', synthetic: true, expiresAt: null }, services: { core: 'ready', storage: 'ready', voice: 'not-installed', model: 'not-installed', cloud: 'on-request' }, audit: [] };
   return state;
 }
 function action(value: Action) {
