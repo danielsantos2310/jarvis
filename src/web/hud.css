@@ -72,3 +72,22 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 .service-list small { display: block; }
 @media(prefers-reduced-motion:reduce) { .floating-tool { transition: none; } }
 @media(forced-colors:active) { .floating-tool { opacity: 1; } }
+
+/* Local atmospheric motion, inspired by the user's image-generation reference. */
+:root { --ambient-cyan: #086880; --ambient-blue: #183679; --ambient-teal: #076d67; }
+.ambient-backdrop { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; background: #020910; }
+.ambient-cloud { position: absolute; width: min(100vw,1100px); height: min(85vw,900px); border-radius: 48% 52% 70% 30%; filter: blur(60px); opacity: .45; will-change: transform; }
+.ambient-cloud-a { left: -20%; top: -25%; background: radial-gradient(ellipse,var(--ambient-cyan),transparent 67%); animation: ambient-flow-a 24s ease-in-out infinite alternate; }
+.ambient-cloud-b { right: -22%; bottom: -40%; background: radial-gradient(ellipse,var(--ambient-blue),transparent 67%); animation: ambient-flow-b 32s ease-in-out infinite alternate; }
+.ambient-cloud-c { left: 25%; top: 25%; background: radial-gradient(ellipse,var(--ambient-teal),transparent 65%); opacity: .22; animation: ambient-flow-c 28s ease-in-out infinite alternate; }
+.ambient-grain { position:absolute;inset:0;opacity:.14;background-image:radial-gradient(#8ae9f5 0.5px,transparent 0.7px);background-size:4px 4px;mask-image:linear-gradient(transparent,#0005,transparent); }
+.ambient-paused .ambient-cloud { animation-play-state: paused; }
+.ambient-toggle { position:fixed;left:14px;bottom:max(12px,env(safe-area-inset-bottom));width:44px;height:44px;min-height:44px;padding:10px;border:1px solid #67e8ff50;border-radius:50%;background:#03111b99;color:var(--mint);z-index:40; }
+.ambient-toggle:hover {background:#104454;}.ambient-toggle:disabled {opacity:.55;cursor:default;}
+.browser-voice label { display:grid;gap:8px;margin:16px 0; }
+@keyframes ambient-flow-a { from {transform:translate(-4%,0) rotate(-18deg) scale(.9);} to {transform:translate(40%,28%) rotate(32deg) scale(1.15);} }
+@keyframes ambient-flow-b { from {transform:translate(8%,0) rotate(10deg);} to {transform:translate(-35%,-36%) rotate(-24deg) scale(1.18);} }
+@keyframes ambient-flow-c { from {transform:translate(-15%,18%) scale(.7);} to {transform:translate(20%,-20%) scale(1.3);} }
+@media(max-width:680px) { .ambient-cloud {width:130vw;height:120vh;filter:blur(36px);} .ambient-cloud-a {left:-60%;top:-30%;}.ambient-cloud-b {right:-65%;} }
+@media(prefers-reduced-motion:reduce) { .ambient-cloud {animation:none;will-change:auto;} }
+@media(forced-colors:active) { .ambient-backdrop {display:none;} }

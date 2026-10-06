@@ -14,6 +14,7 @@ test('Gmail uses PKCE, one-use session-bound state, read-only access, expiry and
     calls.push({url:String(url),body:String(options.body ?? '')});
     if (String(url).endsWith('/token')) return Response.json({access_token:'test-token',token_type:'Bearer',expires_in:3600,scope:gmailScope});
     if (String(url).endsWith('/revoke')) return new Response('');
+    if (String(url).endsWith('/profile')) return Response.json({emailAddress:'fixture@example.test'});
     if (String(url).includes('messages?')) return Response.json({messages:[{id:'abc'}]});
     return Response.json({id:'abc',snippet:'Preview',payload:{headers:[{name:'Subject',value:'<script>inert</script>'},{name:'From',value:'Fixture sender'}],mimeType:'text/plain',body:{data:Buffer.from('Full private message').toString('base64url')}}});
   }) as typeof fetch;
@@ -25,6 +26,7 @@ test('Gmail uses PKCE, one-use session-bound state, read-only access, expiry and
   assert.equal(calls.length,0);
   await gmail.complete('session1','code',auth.searchParams.get('state')!,new AbortController().signal);
   assert(calls[0].body.includes('code_verifier=')); assert.equal(gmail.status('session1').connected,true);
+  assert.deepEqual(await gmail.profile('session1',new AbortController().signal),{emailAddress:'fixture@example.test'});
   await assert.rejects(gmail.complete('session1','code',auth.searchParams.get('state')!,new AbortController().signal),/AUTH_EXPIRED/);
   const list = await gmail.inbox('session1',new AbortController().signal); assert.equal(list.messages[0].subject,'<script>inert</script>');
   assert.equal((await gmail.message('session1','abc',new AbortController().signal)).body,'Full private message');

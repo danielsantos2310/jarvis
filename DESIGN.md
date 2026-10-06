@@ -68,7 +68,7 @@ Full-screen spatial workspace with fourteen independently draggable circular too
 
 ## Elevation & Depth
 
-One restrained halo around the core and thin cyan corner marks distinguish the hero. Utility cards have quiet borders and tonal backgrounds. No glowing body text, animated backgrounds or fake charts. Dialog backdrop separates high consequence controls from the workspace.
+One restrained halo around the core and thin cyan corner marks distinguish the hero. Utility cards have quiet borders and tonal backgrounds. At the owner's request, AmbientBackdrop adds slow cyan/blue/teal cloud motion inspired by a generating-image shimmer. Local CSS owns the effect via --ambient-cyan, --ambient-blue and --ambient-teal; no downloaded images or telemetry. A pause button, reduced-motion preference and hidden-tab pause govern animation. No glowing body text or fake charts. Dialog backdrop separates high consequence controls from the workspace.
 
 ## Shapes
 
@@ -87,6 +87,8 @@ Scrollbars are global in hud.css: --scroll-thumb, --scroll-track, --scroll-hover
 Icons are local SVG symbols inside segmented instrument rings. The user explicitly requested icon-only navigation. The `--widget-opacity` token is .5 at rest, with opacity 1 on hover, focus, selection or drag; forced-colors uses opacity 1. Panel backgrounds are 50% opaque with blur, while text stays opaque. VoiceWaveform drives radial spokes, ring amplitude and waves from actual output PCM; the center also offers a clearly identified silent preview. Standby is still, and reduced-motion suppresses continuous animation. Closing the microphone panel releases capture/playback resources. Unconnected services remain explicitly unconnected; fictional email content is labelled.
 
 EmailPanel owns local Gmail connection/read/disconnect state and clears private UI on unmount. ServicePanels owns opt-in YouTube loading and approximate-location weather with cancellation. Neither requests a provider on initial workspace load. Real Gmail is local-only, read-only and session-only; public Email is a labelled sample. See `docs/development/service-connections.md` for service boundaries and configuration.
+
+BrowserVoice is the temporary device-TTS owner when Piper is not configured. It lists only voices reported as local by the browser, has explicit play/stop controls, and cancels on panel close, tab hide, pause, lock and unmount. Voice/speed selectors are native. Device speech animation is explicitly illustrative (start/stop events), not measured audio. The configured Piper path remains the owner of actual PCM-driven waves. Neither output route starts microphone capture.
 
 ## Do's and Don'ts
 

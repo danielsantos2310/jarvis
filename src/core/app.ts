@@ -194,6 +194,7 @@ export async function createApp(options: AppOptions) {
   app.post('/api/gmail/connect', async req => { gmailAccess(req); return gmail.start(req.session.csrf!, req.session.authUntil!); });
   app.post<{Body:{code:string;state:string}}>('/api/gmail/complete', { schema: { body: { type: 'object', additionalProperties: false, required: ['code','state'], properties: { code: {type:'string',minLength:1,maxLength:2048}, state:{type:'string',minLength:32,maxLength:128} } } } }, async (req,reply) => gmailJob(req,reply,signal => gmail.complete(req.session.csrf!,req.body.code,req.body.state,signal)));
   app.get('/api/gmail/inbox', async (req,reply) => gmailJob(req,reply,signal => gmail.inbox(req.session.csrf!,signal)));
+  app.get('/api/gmail/profile', async (req,reply) => gmailJob(req,reply,signal => gmail.profile(req.session.csrf!,signal)));
   app.get<{Params:{id:string}}>('/api/gmail/messages/:id', { schema: { params: { type:'object',required:['id'],properties:{id:{type:'string',pattern:'^[a-fA-F0-9]{1,64}$'}} } } }, async (req,reply) => gmailJob(req,reply,signal => gmail.message(req.session.csrf!,req.params.id,signal)));
   app.post('/api/gmail/disconnect', async req => gmail.disconnect(req.session.csrf!));
   app.addHook('preClose', async () => { clearInterval(gmailExpiry); for (const controller of gmailControllers) controller.abort(); gmail.clear(); });
