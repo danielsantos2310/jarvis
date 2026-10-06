@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { AmbientBackdrop } from './AmbientBackdrop.tsx';
 export type Panel = 'command' | 'tasks' | 'timers' | 'email' | 'microphone' | 'system' | 'activity' | 'help' | 'calendar' | 'weather' | 'music' | 'presence' | 'home' | 'camera';
 const symbols: Record<string, ReactNode> = {
   calendar: <><rect x="5" y="7" width="22" height="22" rx="2"/><path d="M5 13h22M10 3v8M22 3v8M10 18h3M19 18h3M10 23h3M19 23h3"/></>,
@@ -71,6 +72,7 @@ export function FloatingWorkspace({ active, onOpen, panels, voice, notices, onCo
     return () => { window.removeEventListener('resize', resize); window.removeEventListener('keydown', escape); };
   }, [onOpen]);
   return <div className="floating-workspace">
+    <AmbientBackdrop/>
     <div className="hud-circuit" aria-hidden="true"/>
     <div className="spatial-status"><span className="dot"/><span>{__JARVIS_DEMO__ ? 'PREVIEW' : 'LOCAL'}</span></div>
     <div className="spatial-utilities">

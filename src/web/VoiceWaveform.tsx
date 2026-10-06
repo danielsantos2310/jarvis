@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 /** Output visualization only. Pass the speech player's analyser and playing state;
  * this component never opens a microphone, plays audio, or connects to a server. */
-export function VoiceWaveform({ analyser, speaking = false, connected = false }: { analyser?: AnalyserNode; speaking?: boolean; connected?: boolean }) {
+export function VoiceWaveform({ analyser, speaking = false, connected = false, illustrative = false }: { analyser?: AnalyserNode; speaking?: boolean; connected?: boolean; illustrative?: boolean }) {
   const [preview, setPreview] = useState(false);
   const paths = useRef<(SVGPathElement | null)[]>([]);
   const halo = useRef<SVGCircleElement | null>(null);
@@ -55,7 +55,7 @@ export function VoiceWaveform({ analyser, speaking = false, connected = false }:
   }, [active, analyser, speaking]);
   return <section className={`voice-output ${active ? 'voice-output-active' : ''}`} aria-label="JARVIS voice visualization">
     <div className="reactor-art"><CoreDisplay/><svg className="reactive-rings" viewBox="0 0 360 360" aria-hidden="true"><circle ref={halo} cx="180" cy="180" r="135"/><path ref={spokes}/></svg></div>
-    <div className="voice-output-heading"><span>VOICE OUTPUT</span><span role="status">{speaking ? 'JARVIS speaking' : preview ? 'Waveform preview · silent' : connected ? 'Standby · microphone off' : 'Standby · speech not connected'}</span></div>
+    <div className="voice-output-heading"><span>VOICE OUTPUT</span><span role="status">{speaking ? illustrative ? 'Device speaking · illustrative waves' : 'JARVIS speaking' : preview ? 'Waveform preview · silent' : connected ? 'Standby · microphone off' : 'Standby · speech not connected'}</span></div>
     <svg className="speech-wave" viewBox="0 0 600 96" preserveAspectRatio="none" aria-hidden="true">
       <path className="voice-baseline" d="M0 48H600"/>
       {[0, 1, 2].map(layer => <path key={layer} ref={element => { paths.current[layer] = element; }} className={`voice-wave voice-wave-${layer}`} d="M0 48H600"/>)}

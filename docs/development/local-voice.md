@@ -42,7 +42,7 @@ npm run start:voice
 
 Open the exact `http://127.0.0.1:3000` address (or configured JARVIS port), unlock and find **Talk to JARVIS**. Click **Check voice engines**, then **Test spoken voice**. Next, use **Start voice capture**, speak a short command, and click **Finish and transcribe**. Review the words and send them. Click **Read latest reply aloud** to hear the result.
 
-If an engine is unavailable, wait for first-run model loading and check container status. Do not expose worker ports to the LAN. If the browser denies the mic, change the permission for this local site. Voice is absent from the public GitHub Pages sample. Without `--voice`, the original input-level microphone lab remains available.
+If an engine is unavailable, wait for first-run model loading and check container status. Do not expose worker ports to the LAN. If the browser denies the mic, change the permission for this local site. Piper/Whisper are absent from GitHub Pages. The public preview and local build without `--voice` now offer a separate **Test a device voice** section alongside the input-level microphone lab. See [device-voice-test.md](device-voice-test.md).
 
 To stop workers while preserving downloaded models:
 

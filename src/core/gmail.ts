@@ -64,6 +64,11 @@ export class GmailService {
     }
     return { messages };
   }
+  async profile(key: string, signal: AbortSignal) {
+    const data = await this.get(key,'profile',signal);
+    if (typeof data.emailAddress !== 'string' || data.emailAddress.length > 320 || !data.emailAddress.includes('@')) throw new AppError(502,'GMAIL_PROVIDER_ERROR');
+    return {emailAddress:data.emailAddress};
+  }
   private overview(data: any) {
     const header = (name: string) => String((data.payload?.headers ?? []).find((h: any) => String(h.name).toLowerCase() === name)?.value ?? '').slice(0,1000);
     return { id: String(data.id), subject: header('subject') || '(No subject)', from: header('from'), date: header('date'), excerpt: String(data.snippet ?? '').slice(0,1500) };
