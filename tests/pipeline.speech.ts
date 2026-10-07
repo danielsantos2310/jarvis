@@ -15,7 +15,7 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
       return destination.stream;
     } });
   });
-  if (process.env.JARVIS_TEST_WEBGL) await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.emulateMedia({reducedMotion:'no-preference'});
   await page.goto('/'); await page.getByLabel('Setup code').fill('synthetic-browser-setup');
   await page.getByLabel('Password', { exact: true }).fill('Synthetic speech passphrase');
   await page.getByRole('checkbox').check(); await page.getByRole('button', { name: 'Create workspace' }).click();
@@ -29,14 +29,11 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
   await page.route('**/api/voice/status',async route=>{await statusGate;await route.continue();});
   await controls.getByRole('button', { name: 'Check voice engines' }).click();
   await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','thinking');
-  if (process.env.JARVIS_TEST_WEBGL) {
-    await expect.poll(async()=>Number(await page.locator('.avatar-live').getAttribute('data-thinking'))).toBeGreaterThan(.8);
-    await expect(page.locator('.avatar-live')).toHaveAttribute('data-mouth','0.000');
-  }
+  await expect(page.locator('.energy-rotor')).toHaveCSS('animation-duration','5s');
   await page.screenshot({path:'artifacts/neural-processing.png'});
   releaseStatus();
   await expect(controls.getByRole('button', { name: 'Start voice capture' })).toBeEnabled();
-  if (process.env.JARVIS_TEST_WEBGL) await expect(page.locator('.avatar-live')).toHaveAttribute('data-thinking','0.000');
+  await expect(page.locator('.energy-rotor')).toHaveCSS('animation-duration','48s');
   await controls.getByRole('button', { name: 'Start voice capture' }).click();
   await expect(controls.getByRole('button', { name: 'Finish and transcribe' })).toBeVisible();
   await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','listening');
@@ -56,10 +53,7 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
   await expect(panel.locator('.voice-output [role=status]')).toContainText('Standby');
   await controls.getByRole('button', { name: 'Test spoken voice' }).click();
   await expect(panel.locator('.voice-output [role=status]')).toHaveText('JARVIS speaking');
-  if (process.env.JARVIS_TEST_WEBGL) {
-    await expect(panel.locator('.avatar-live')).toHaveAttribute('data-ready','true');
-    await expect.poll(async()=>Number(await panel.locator('.avatar-live').getAttribute('data-mouth'))).toBeGreaterThan(.1);
-  }
+  await expect.poll(async()=>Number(await panel.locator('.voice-output').evaluate(el=>getComputedStyle(el).getPropertyValue('--core-energy')))).toBeGreaterThan(.1);
   await page.screenshot({ path: 'artifacts/local-speech.png', fullPage: true });
   await page.getByRole('button', { name: 'Lock workspace' }).click();
   await expect(panel).toHaveCount(0);

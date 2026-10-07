@@ -10,8 +10,6 @@ test('device voice uses only local voices, starts explicitly and stops on close,
     Object.defineProperty(window,'loadFixtureVoices',{value:()=>{state.voices=[{name:'Remote voice',voiceURI:'remote',lang:'en-GB',localService:false},{name:'Local British',voiceURI:'local',lang:'en-GB',localService:true}];events.dispatchEvent(new Event('voiceschanged'));}});
   });
   const requests:string[]=[];await page.goto('./');
-  // Finish loading the decorative portrait before observing speech-related traffic.
-  await page.locator('.avatar-portrait').evaluate(async el=>{const img=new Image();img.src=el.getAttribute('href')!;await img.decode();});
   page.on('request',r=>requests.push(r.url()));
   await openTool(page,'Microphone');const panel=page.getByRole('region',{name:'Device voice test'});
   await expect(panel.getByRole('button',{name:'Test device voice',exact:true})).toBeDisabled();

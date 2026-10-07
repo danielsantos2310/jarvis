@@ -1,4 +1,4 @@
 import { createContext } from 'react';
 
-/** Selected tool center in viewport percentages; null means look at the owner. */
+/** Shared selected-tool center in viewport percentages; null clears the core focus arc. */
 export const AvatarAttention = createContext<{ x: number; y: number } | null>(null);
