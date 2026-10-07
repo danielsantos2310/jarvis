@@ -56,6 +56,7 @@ export function SpeechPanel({ csrf, onTranscript, reply, controlsOpen = true }: 
       if (at !== generation.current) return;
       const source = context.createMediaStreamSource(stream), node = new AudioWorkletNode(context, 'jarvis-capture');
       // A zero-gain output keeps the worklet running without monitoring the mic.
+      const inputAnalyser=context.createAnalyser();inputAnalyser.fftSize=256;source.connect(inputAnalyser);setAnalyser(inputAnalyser);
       const silence = context.createGain(); silence.gain.value = 0;
       source.connect(node); node.connect(silence); silence.connect(context.destination);
       let chunks: Float32Array[] = [], samples = 0, finished = false;
@@ -65,7 +66,7 @@ export function SpeechPanel({ csrf, onTranscript, reply, controlsOpen = true }: 
         if (samples + chunk.length <= activeContext.sampleRate * 30) { chunks.push(chunk); samples += chunk.length; }
       };
       const release = () => {
-        clearTimeout(timer); node.port.onmessage = null; node.port.close(); source.disconnect(); node.disconnect(); silence.disconnect();
+        clearTimeout(timer); node.port.onmessage = null; node.port.close(); source.disconnect(); inputAnalyser.disconnect(); setAnalyser(undefined); node.disconnect(); silence.disconnect();
         activeStream.getTracks().forEach(t => t.stop()); void activeContext.close().catch(() => {});
       };
       const finish = async () => {
@@ -126,7 +127,7 @@ export function SpeechPanel({ csrf, onTranscript, reply, controlsOpen = true }: 
     } catch (e) { if (at === generation.current) stop((e as Error).message); }
   }
   return <section className="speech-panel" id="voice-session" aria-label="Local voice session">
-    <VoiceWaveform analyser={analyser} speaking={phase === 'speaking'} connected={status.tts}/>
+    <VoiceWaveform listening={phase === 'listening'} processing={phase === 'transcribing' || phase === 'synthesizing'} analyser={analyser} speaking={phase === 'speaking'} connected={status.tts}/>
     {target && createPortal(<div className="card microphone-test">
       <div className="card-heading"><h2>Talk to JARVIS</h2><span className="tag">{phase === 'listening' ? 'MIC ACTIVE' : 'MIC OFF'}</span></div>
       <p className="muted">English · local Whisper + Piper. Audio is held temporarily in memory and sent only to this PC. Review recognised words before sending. Spoken replies are audible to people nearby.</p>

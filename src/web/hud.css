@@ -107,3 +107,34 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 @media(prefers-reduced-motion:reduce) {.orbital-wave,.orbital-wave path,.core-ring,.core-ring-inner,.core-segments,.core-center {animation:none!important;}}
 
 .reactor-hidden *, .reactor-hidden .orbital-wave path {animation-play-state:paused!important;}
+
+/* Approved neural identity: effects carry state, never visible state captions. */
+:root {--neural-ink:#02080d;--neural-cyan:#48d8ff;--neural-blue:#0e3752;--neural-red:#ce5867;}
+.neural-backdrop {background:radial-gradient(ellipse at 50% 47%,#082533 0%,var(--neural-ink) 62%);}
+.neural-field {position:absolute;inset:0;width:100%;height:100%;}
+.neural-aura {position:absolute;inset:0;background:radial-gradient(ellipse at 12% 50%,#05334370,transparent 45%),radial-gradient(ellipse at 90% 70%,#082e5170,transparent 40%);}
+.hud-circuit {opacity:.25;}
+.spatial-voice .voice-output-heading {position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;}
+.spatial-voice .reactor-art .core-display svg {filter:drop-shadow(0 0 7px #23b9e536);}
+.neural-avatar .core-ring,.neural-avatar .core-ring-inner {stroke:var(--neural-cyan);stroke-width:.7;opacity:.3;animation:none;}
+.avatar-face {animation:avatar-float 7s ease-in-out infinite alternate;transform-origin:180px 180px;}
+.avatar-eyes {fill:#7feaff;fill-opacity:.28;stroke:#b0f6ff;stroke-width:1.2;filter:drop-shadow(0 0 4px #6ceaff);}
+.avatar-heart,.avatar-halo {animation:avatar-breathe 4s ease-in-out infinite alternate;}
+.thought-geometry,.thought-sweep {opacity:0;transform-origin:180px 180px;}
+.spatial-voice .reactive-rings {opacity:0;}.spatial-voice .speech-wave {opacity:0;top:65%;left:0;width:100%;}
+.spatial-voice .reactor-art .orbital-waves {inset:-18%;width:136%;height:136%;opacity:.24;}
+.orbital-wave {animation-duration:45s;stroke-width:.65;}
+[data-visual-state=listening] .reactive-rings {opacity:.9;}
+[data-visual-state=listening] .orbital-waves {opacity:.65!important;}
+[data-visual-state=listening] .avatar-eyes {fill-opacity:.7;}
+[data-visual-state=thinking] .thought-geometry {opacity:.45;animation:orbital-spin 12s linear infinite;}
+[data-visual-state=thinking] .thought-sweep {opacity:1;animation:orbital-spin 3s linear infinite;}
+[data-visual-state=thinking] .core-ring {opacity:.8;animation:orbital-spin 6s linear infinite;}
+[data-visual-state=thinking] .core-ring-inner {animation:orbital-spin 9s linear infinite reverse;opacity:.6;}
+[data-visual-state=speaking] .speech-wave,[data-visual-state=speaking] .reactive-rings {opacity:1;}
+[data-visual-state=speaking] .avatar-heart {animation-duration:.5s;filter:drop-shadow(0 0 9px #67e8ff);}
+[data-visual-state=speaking] .avatar-eyes {fill-opacity:.8;}
+@keyframes avatar-float {from {transform:translateY(-2px) rotate(-1deg);}to {transform:translateY(2px) rotate(1deg);}}
+@keyframes avatar-breathe {from {opacity:.45;}to {opacity:1;}}
+@media(prefers-reduced-motion:reduce){.neural-avatar * {animation:none!important;}}
+@media(forced-colors:active){.neural-avatar path,.neural-avatar circle {stroke:CanvasText;}.neural-field {display:none;}}

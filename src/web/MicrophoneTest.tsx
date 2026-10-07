@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 
 /** Short, explicit, in-memory input check. No recording or transmission. */
-export function MicrophoneTest({ publicPreview = false }: { publicPreview?: boolean }) {
+export function MicrophoneTest({ publicPreview = false, onActivity }: { publicPreview?: boolean; onActivity?:(value:{listening:boolean;level:number})=>void }) {
   const [state,setState] = useState<'off'|'requesting'|'listening'>('off');
   const [level,setLevel] = useState(0);
   const [message,setMessage] = useState('Microphone is off.');
+  useEffect(()=>{onActivity?.({listening:state === 'listening',level});},[state,level,onActivity]);
+  useEffect(()=>()=>onActivity?.({listening:false,level:0}),[onActivity]);
   const generation = useRef(0);
   const cleanup = useRef<() => void>(() => {});
   function stop(message = 'Microphone is off.') {
