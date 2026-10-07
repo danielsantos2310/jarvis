@@ -1,3 +1,4 @@
+import { AvatarAttention } from './AvatarAttention.ts';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AmbientBackdrop } from './AmbientBackdrop.tsx';
@@ -81,7 +82,7 @@ export function FloatingWorkspace({ active, onOpen, panels, voice, notices, onCo
       <button className="hud-utility" aria-label={__JARVIS_DEMO__ ? 'Reset demo' : 'Lock workspace'} title={__JARVIS_DEMO__ ? 'Reset demo' : 'Lock workspace'} onClick={() => {cancelTap();onLock();}}><HudIcon name="lock"/></button>
     </div>
     <main id="main" className="spatial-stage" aria-label="JARVIS floating workspace">
-      <div className="spatial-voice">{voice}</div>
+      <div className="spatial-voice"><AvatarAttention.Provider value={active ? points[active] : null}>{voice}</AvatarAttention.Provider></div>
       <nav aria-label="Floating tools">{items.filter(item => !hidden.includes(item.id)).map(item => <button key={item.id}
         className={`floating-tool ${moving === item.id ? 'is-moving' : ''}`} style={{ left: `${points[item.id].x}%`, top: `${points[item.id].y}%` }}
         aria-label={item.label} title={`${item.label} · drag to move; double-click or double-tap to hide; Delete also hides`} aria-describedby="move-instructions" aria-pressed={active === item.id}

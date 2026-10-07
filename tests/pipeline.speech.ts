@@ -15,6 +15,7 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
       return destination.stream;
     } });
   });
+  if (process.env.JARVIS_TEST_WEBGL) await page.emulateMedia({reducedMotion:'no-preference'});
   await page.goto('/'); await page.getByLabel('Setup code').fill('synthetic-browser-setup');
   await page.getByLabel('Password', { exact: true }).fill('Synthetic speech passphrase');
   await page.getByRole('checkbox').check(); await page.getByRole('button', { name: 'Create workspace' }).click();
@@ -50,6 +51,10 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
   await expect(panel.locator('.voice-output [role=status]')).toContainText('Standby');
   await controls.getByRole('button', { name: 'Test spoken voice' }).click();
   await expect(panel.locator('.voice-output [role=status]')).toHaveText('JARVIS speaking');
+  if (process.env.JARVIS_TEST_WEBGL) {
+    await expect(panel.locator('.avatar-live')).toHaveAttribute('data-ready','true');
+    await expect.poll(async()=>Number(await panel.locator('.avatar-live').getAttribute('data-mouth'))).toBeGreaterThan(.1);
+  }
   await page.screenshot({ path: 'artifacts/local-speech.png', fullPage: true });
   await page.getByRole('button', { name: 'Lock workspace' }).click();
   await expect(panel).toHaveCount(0);
