@@ -29,9 +29,14 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
   await page.route('**/api/voice/status',async route=>{await statusGate;await route.continue();});
   await controls.getByRole('button', { name: 'Check voice engines' }).click();
   await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','thinking');
+  if (process.env.JARVIS_TEST_WEBGL) {
+    await expect.poll(async()=>Number(await page.locator('.avatar-live').getAttribute('data-thinking'))).toBeGreaterThan(.8);
+    await expect(page.locator('.avatar-live')).toHaveAttribute('data-mouth','0.000');
+  }
   await page.screenshot({path:'artifacts/neural-processing.png'});
   releaseStatus();
   await expect(controls.getByRole('button', { name: 'Start voice capture' })).toBeEnabled();
+  if (process.env.JARVIS_TEST_WEBGL) await expect(page.locator('.avatar-live')).toHaveAttribute('data-thinking','0.000');
   await controls.getByRole('button', { name: 'Start voice capture' }).click();
   await expect(controls.getByRole('button', { name: 'Finish and transcribe' })).toBeVisible();
   await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','listening');

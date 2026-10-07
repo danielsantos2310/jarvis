@@ -2,7 +2,7 @@ import { LivePortrait } from './LivePortrait.tsx';
 const portrait = new URL('./assets/neural-avatar.webp', import.meta.url).href;
 
 // Preserve the approved artwork, with a live deformation layer and still fallback.
-export function CoreDisplay({ speaking = false, analyser }: { speaking?: boolean; analyser?: AnalyserNode }) {
+export function CoreDisplay({ speaking = false, analyser, processing = false }: { speaking?: boolean; analyser?: AnalyserNode; processing?: boolean }) {
   return <div className="core-display neural-avatar" aria-hidden="true">
     <svg viewBox="0 0 360 360" fill="none" focusable="false">
       <defs>
@@ -23,7 +23,7 @@ export function CoreDisplay({ speaking = false, analyser }: { speaking?: boolean
       </g>
       <g clipPath="url(#avatar-aperture)">
         <image className="avatar-portrait" href={portrait} x="18" y="20" width="324" height="324" preserveAspectRatio="xMidYMid meet"/>
-        <LivePortrait speaking={speaking} analyser={analyser}/>
+        <LivePortrait speaking={speaking} analyser={analyser} processing={processing}/>
         <rect className="avatar-scan" x="55" y="58" width="250" height="28" fill="url(#avatar-scan)"/>
       </g>
       <g className="avatar-locks" stroke="#63e7ff" strokeWidth="1.3">

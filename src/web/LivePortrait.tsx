@@ -8,6 +8,7 @@ void main(){uv=vec2(position.x*.5+.5,.5-position.y*.5);gl_Position=vec4(position
 const fragment = `precision mediump float;
 varying vec2 uv; uniform sampler2D portrait; uniform vec2 gaze;
 uniform float blink; uniform float mouth; uniform float breath;
+uniform float thinking; uniform float clock;
 float bell(vec2 p,vec2 center,vec2 radius){vec2 q=(p-center)/radius;return exp(-dot(q,q));}
 vec2 eye(vec2 p,vec2 center){
   vec2 d=p-center;
@@ -32,23 +33,44 @@ void main(){
   p.y-=gaze.y*.021*depth+breath*.0018*head;
   vec2 face=p;
   p=eye(p,vec2(.396,.425));p=eye(p,vec2(.603,.425));
-  float dx=face.x-.499;
-  float seam=.630-.001*pow(dx/.065,2.);
-  float opening=mouth*.019;
-  float lipWeight=exp(-pow(dx/.080,4.))*exp(-pow((face.y-.638)/.065,2.));
-  p.y-=opening*clamp((face.y-seam)/.004,-1.,1.)*lipWeight;
   vec4 color=texture2D(portrait,p);
-  float cavity=1.-smoothstep(.85,1.,pow(dx/(.053+mouth*.009),2.)+pow((face.y-seam)/max(.0001,opening),2.));
-  color.rgb=mix(color.rgb,vec3(.002,.016,.025),cavity*smoothstep(.025,.12,mouth));
+  // Preserve geometry: shade and illuminate the portrait, never open its mouth.
+  vec2 grain=fract(p*155.)-.5;
+  float dots=1.-smoothstep(.13,.30,length(grain));
+  float eyes=max(bell(face,vec2(.396,.425),vec2(.05,.025)),bell(face,vec2(.603,.425),vec2(.05,.025)));
+  color.rgb*=mix(.32+.62*dots,.92,eyes);
+  float lipX=.427+floor((face.x-.427)/.0055+.5)*.0055;
+  float u=clamp((lipX-.499)/.074,-1.,1.);
+  float arch=sqrt(max(0.,1.-u*u));
+  float upper=.630-.026*arch+.006*exp(-u*u*18.);
+  float lower=.630+.027*arch;
+  float lipDot=max(bell(face,vec2(lipX,upper),vec2(.0018)),bell(face,vec2(lipX,lower),vec2(.0018)));
+  float lipGlow=max(bell(face,vec2(lipX,upper),vec2(.006)),bell(face,vec2(lipX,lower),vec2(.006)));
+  float lipBounds=1.-smoothstep(.070,.077,abs(face.x-.499));
+  float ripple=.72+.28*sin(face.x*100.-clock*3.);
+  color.rgb+=vec3(.16,.77,1.)*(lipDot*(.10+mouth*1.9*ripple)+lipGlow*mouth*.19)*lipBounds;
+  // A sparse inner neural network is lit only by actual pending work.
+  float neural=0.;
+  for(int i=0;i<14;i++){
+    float n=float(i);
+    vec2 a=vec2(.499,.245)+vec2(sin(n*2.4)*.158,cos(n*1.7)*.112);
+    vec2 b=vec2(.499,.245)+vec2(sin((n+1.)*2.4)*.158,cos((n+1.)*1.7)*.112);
+    vec2 ab=b-a;float t=clamp(dot(face-a,ab)/dot(ab,ab),0.,1.);
+    float line=1.-smoothstep(.0004,.0015,length(face-a-t*ab));
+    vec2 pulse=mix(a,b,fract(clock*.19+n*.173));
+    neural+=line*.055+bell(face,a,vec2(.0024))*.7+bell(face,pulse,vec2(.005))*.55;
+  }
+  float brain=1.-smoothstep(.75,1.,length((face-vec2(.499,.245))/vec2(.19,.145)));
+  color.rgb+=vec3(.08,.65,1.)*thinking*(neural*brain+bell(face,vec2(.499,.245),vec2(.16,.11))*.08);
   gl_FragColor=color;
 }`;
 
-export function LivePortrait({ speaking, analyser }: { speaking: boolean; analyser?: AnalyserNode }) {
+export function LivePortrait({ speaking, analyser, processing = false }: { speaking: boolean; analyser?: AnalyserNode; processing?: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
   const target = useContext(AvatarAttention);
-  const activity = useRef({ speaking, analyser, target });
-  activity.current = { speaking, analyser, target };
+  const activity = useRef({ speaking, analyser, target, processing });
+  activity.current = { speaking, analyser, target, processing };
 
   useEffect(() => {
     const el = canvas.current!;
@@ -57,7 +79,7 @@ export function LivePortrait({ speaking, analyser }: { speaking: boolean; analys
     if (!gl) return; // The original SVG image is the reliable no-GPU fallback.
     const gpu = gl;
     let disposed = false, frame = 0, loaded = false, last = 0;
-    let lookX = 0, lookY = 0, jaw = 0, nextBlink = performance.now() + 2800;
+    let lookX = 0, lookY = 0, jaw = 0, thought = 0, nextBlink = performance.now() + 2800;
     let samples: Uint8Array<ArrayBuffer> | null = null, sampled: AnalyserNode | undefined;
     const shaders: WebGLShader[] = [];
     const program = gpu.createProgram()!, buffer = gpu.createBuffer()!, texture = gpu.createTexture()!;
@@ -81,6 +103,7 @@ export function LivePortrait({ speaking, analyser }: { speaking: boolean; analys
     gpu.enableVertexAttribArray(position); gpu.vertexAttribPointer(position, 2, gpu.FLOAT, false, 0, 0);
     const gaze = gpu.getUniformLocation(program, 'gaze'), blink = gpu.getUniformLocation(program, 'blink');
     const mouth = gpu.getUniformLocation(program, 'mouth'), breath = gpu.getUniformLocation(program, 'breath');
+    const thinking=gpu.getUniformLocation(program,'thinking'), clock=gpu.getUniformLocation(program,'clock');
     gpu.uniform1i(gpu.getUniformLocation(program, 'portrait'), 0);
     gpu.bindTexture(gpu.TEXTURE_2D, texture);
     gpu.texParameteri(gpu.TEXTURE_2D, gpu.TEXTURE_WRAP_S, gpu.CLAMP_TO_EDGE);
@@ -99,7 +122,7 @@ export function LivePortrait({ speaking, analyser }: { speaking: boolean; analys
       if (disposed || !loaded || document.hidden || gpu.isContextLost()) return;
       if (now-last >= 33 || preference.matches) {
         const dt = Math.min(100, now-last || 33); last = now;
-        const { speaking: talking, analyser: audio, target: attention } = activity.current;
+        const { speaking: talking, analyser: audio, target: attention, processing: pending } = activity.current;
         const reduced = preference.matches;
         const box = el.getBoundingClientRect();
         const tx = attention ? Math.max(-1,Math.min(1,(attention.x/100*innerWidth-box.x-box.width/2)/(innerWidth*.4))) : 0;
@@ -117,7 +140,10 @@ export function LivePortrait({ speaking, analyser }: { speaking: boolean; analys
             energy = Math.max(0,Math.sin(now/87)*.45+Math.sin(now/193)*.25+.28);
           }
         }
-        jaw = talking && !reduced ? jaw+(energy-jaw)*(1-Math.exp(-dt/45)) : 0;
+        jaw = reduced ? 0 : jaw+(energy-jaw)*(1-Math.exp(-dt/(energy>jaw?85:220)));
+        if(jaw<.002) jaw=0;
+        thought = reduced ? 0 : thought+((pending&&!talking?1:0)-thought)*(1-Math.exp(-dt/250));
+        if(thought<.002) thought=0;
         let closing = 0;
         if (!reduced && now >= nextBlink) {
           const phase = (now-nextBlink)/190;
@@ -128,17 +154,18 @@ export function LivePortrait({ speaking, analyser }: { speaking: boolean; analys
         if (el.width !== size) { el.width=size; el.height=size; }
         gpu.viewport(0,0,el.width,el.height); gpu.useProgram(program);
         gpu.uniform2f(gaze,reduced?0:lookX,reduced?0:lookY); gpu.uniform1f(blink,closing);
+        gpu.uniform1f(thinking,thought); gpu.uniform1f(clock,reduced?0:now/1000);
         gpu.uniform1f(mouth,jaw); gpu.uniform1f(breath,reduced?0:Math.sin(now/1800));
         gpu.drawArrays(gpu.TRIANGLES,0,6);
         el.dataset.gazeX = lookX.toFixed(3); el.dataset.gazeY = lookY.toFixed(3);
-        el.dataset.mouth = jaw.toFixed(3); el.dataset.blink = closing.toFixed(3);
+        el.dataset.mouth = jaw.toFixed(3); el.dataset.thinking=thought.toFixed(3); el.dataset.blink = closing.toFixed(3);
       }
       if (!preference.matches) frame=requestAnimationFrame(draw);
     }
     function restart() {
       cancelAnimationFrame(frame); last=0;
       el.dataset.motion=document.hidden ? 'paused' : preference.matches ? 'reduced' : 'active';
-      if (document.hidden || preference.matches) { jaw=0; lookX=0; lookY=0; }
+      if (document.hidden || preference.matches) { jaw=0; thought=0; lookX=0; lookY=0; }
       if (!document.hidden) { nextBlink=performance.now()+2800; draw(performance.now()); }
     }
     function lost(event: Event) { event.preventDefault(); cancelAnimationFrame(frame); setReady(false); }
