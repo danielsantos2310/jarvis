@@ -21,3 +21,9 @@ The connection code is already implemented locally. After configuring the server
 - [Local vs remote voice flag](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesisVoice/localService)
 - [Microsoft voice installation guidance](https://support.microsoft.com/en-gb/education/learning-accelerators/download-languages-and-voices-for-immersive-reader-read-mode-and-read-aloud)
 - [Gmail service configuration](service-connections.md)
+
+## Read Gmail aloud
+
+In the local app, open Email, connect/verify Gmail, load the latest messages and select one. Select Preview or load Full message, choose a local voice under Read email aloud, then select Read displayed email aloud. It reads the displayed text in short sections, up to 20,000 characters including the heading. Stop cancels; changing the message/view, closing Email, hiding the tab, pause, lock or lost workspace access also stops. No AI summary is generated. The public preview offers the same reader with a clearly fictional message for audio testing.
+
+The reactor now has decorative orbiting waves and rotating rings in standby. These do not indicate a connected microphone or identity. Device speech adds illustrative output waves; Piper uses actual audio data.

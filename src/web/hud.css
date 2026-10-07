@@ -80,21 +80,30 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 .ambient-cloud-a { left: -30%; top: -30%; background: radial-gradient(ellipse,var(--ambient-cyan),transparent 66%); animation: ambient-flow-a 9s ease-in-out infinite alternate; }
 .ambient-cloud-b { right: -25%; bottom: -30%; background: radial-gradient(ellipse,var(--ambient-blue),transparent 66%); animation: ambient-flow-b 12s ease-in-out infinite alternate; }
 .ambient-cloud-c { left: 20%; top: 20%; background: radial-gradient(ellipse,var(--ambient-teal),transparent 62%); opacity: .4; animation: ambient-flow-c 10s ease-in-out infinite alternate; }
-.ambient-streams {position:absolute;inset:-10%;width:120%;height:120%;overflow:visible;mask-image:radial-gradient(ellipse,#0009 12%,#000 60%);}
-.ambient-ribbon {fill:none;stroke:url(#ambient-spectrum);stroke-width:1.1;opacity:.48;transform-origin:center;animation:ambient-ribbon-drift 8s ease-in-out infinite alternate;}
-.ambient-ribbon path:nth-child(3n) {stroke-width:2;stroke-dasharray:100 240;animation:ambient-current 6s linear infinite;opacity:.85;}
-.ambient-ribbon-1 {opacity:.3;animation-duration:11s;animation-delay:-4s;}
-.ambient-ribbon-2 {opacity:.22;animation-duration:9s;animation-direction:alternate-reverse;}
-.ambient-particles {fill:#85eaff;opacity:.5;animation:ambient-particle-drift 14s linear infinite;}
 .ambient-grain {position:absolute;inset:0;opacity:.12;background-image:radial-gradient(#8ae9f5 .5px,transparent .7px);background-size:4px 4px;mask-image:linear-gradient(transparent,#0005,transparent);}
-.ambient-paused *, .ambient-paused .ambient-ribbon path:nth-child(3n) {animation-play-state:paused;}
+.ambient-paused * {animation-play-state:paused;}
 .browser-voice label {display:grid;gap:8px;margin:16px 0;}
 @keyframes ambient-flow-a {from {transform:translate(-8%,-8%) rotate(-18deg);} to {transform:translate(35%,30%) rotate(32deg) scale(1.15);}}
 @keyframes ambient-flow-b {from {transform:translate(8%,0) rotate(10deg);} to {transform:translate(-35%,-36%) rotate(-24deg) scale(1.18);}}
 @keyframes ambient-flow-c {from {transform:translate(-15%,18%) scale(.7);} to {transform:translate(20%,-20%) scale(1.3);}}
-@keyframes ambient-ribbon-drift {from {transform:translate(-50px,-75px) rotate(-8deg) scaleY(.8);} to {transform:translate(55px,85px) rotate(8deg) scaleY(1.2);}}
-@keyframes ambient-current {to {stroke-dashoffset:-680;}}
-@keyframes ambient-particle-drift {from {transform:translate(-25px,35px);} to {transform:translate(25px,-35px);}}
-@media(max-width:680px) {.ambient-cloud {width:150vw;height:120vh;filter:blur(24px);}.ambient-cloud-a {left:-60%;top:-20%;}.ambient-cloud-b {right:-60%;}.ambient-ribbon {stroke-width:1.5;}}
+@media(max-width:680px) {.ambient-cloud {width:150vw;height:120vh;filter:blur(24px);}.ambient-cloud-a {left:-60%;top:-20%;}.ambient-cloud-b {right:-60%;}}
 @media(prefers-reduced-motion:reduce) {.ambient-backdrop * {animation:none!important;will-change:auto;}}
 @media(forced-colors:active) {.ambient-backdrop {display:none;}}
+
+/* Waves share the reactor's center at every viewport size. */
+.spatial-voice .reactor-art .orbital-waves {position:absolute;inset:-42%;width:184%;height:184%;max-width:none;overflow:visible;pointer-events:none;}
+.orbital-wave {transform-origin:300px 300px;fill:none;stroke:#51e9ff;stroke-width:1.3;opacity:.65;animation:orbital-spin 22s linear infinite;}
+.orbital-wave-1 {stroke:#209dff;opacity:.55;animation-duration:29s;animation-direction:reverse;}
+.orbital-wave-2 {stroke:#3dfff0;opacity:.35;animation-duration:36s;}
+.orbital-wave-3 {stroke:#57c8ff;opacity:.25;animation-duration:43s;animation-direction:reverse;}
+.orbital-wave path {animation:orbital-breathe 5s ease-in-out infinite alternate;transform-origin:300px 300px;}
+.orbital-wave-1 path {animation-delay:-2s;}.orbital-wave-2 path {animation-delay:-3s;}
+.core-ring,.core-ring-inner,.core-segments {transform-origin:180px 180px;animation:orbital-spin 26s linear infinite;}
+.core-ring-inner {animation-direction:reverse;animation-duration:17s;}.core-segments {animation-duration:42s;}
+.core-center {animation:reactor-breathe 4s ease-in-out infinite alternate;}
+@keyframes orbital-spin {to {transform:rotate(360deg);}}
+@keyframes orbital-breathe {from {transform:scale(.96);}to {transform:scale(1.04);}}
+@keyframes reactor-breathe {from {fill:#063544;opacity:.65;}to {fill:#0b6779;opacity:1;}}
+@media(prefers-reduced-motion:reduce) {.orbital-wave,.orbital-wave path,.core-ring,.core-ring-inner,.core-segments,.core-center {animation:none!important;}}
+
+.reactor-hidden *, .reactor-hidden .orbital-wave path {animation-play-state:paused!important;}

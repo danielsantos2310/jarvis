@@ -44,7 +44,7 @@ test('ambient energy moves without playback controls, respects reduced motion, a
   const cloud=page.locator('.ambient-cloud-a');const first=await cloud.evaluate(el=>getComputedStyle(el).transform);
   await expect.poll(()=>cloud.evaluate(el=>getComputedStyle(el).transform)).not.toBe(first);
   await expect(page.getByRole('button',{name:/background motion/i})).toHaveCount(0);
-  const ribbon=page.locator('.ambient-ribbon-0');
+  const ribbon=page.locator('.orbital-wave-0');
   const position=await ribbon.evaluate(el=>getComputedStyle(el).transform);
   await expect.poll(()=>ribbon.evaluate(el=>getComputedStyle(el).transform)).not.toBe(position);
   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
@@ -57,4 +57,29 @@ test('ambient energy moves without playback controls, respects reduced motion, a
   await expect(page.getByLabel('Task title')).toBeVisible();
   await page.emulateMedia({reducedMotion:'reduce'});await expect(cloud).toHaveCSS('animation-name','none');
   await expect(ribbon).toHaveCSS('animation-name','none');
+});
+
+
+test('email voice reads only requested displayed text, advances chunks and stops on close',async({page})=>{
+  await page.addInitScript(()=>{
+    const state={texts:[] as string[],active:null as any,cancels:0};
+    Object.defineProperty(window,'emailVoice',{value:state});
+    Object.defineProperty(window,'SpeechSynthesisUtterance',{value:class {text:string;constructor(text:string){this.text=text;}}});
+    Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[{name:'Local test',voiceURI:'local',lang:'en-GB',localService:true}],speak:(u:any)=>{state.texts.push(u.text);state.active=u;u.onstart?.();},cancel:()=>{state.cancels++;},addEventListener:()=>{},removeEventListener:()=>{}}});
+  });
+  await page.goto('./');await openTool(page,'Email');
+  const reader=page.getByRole('region',{name:'Read email aloud'});
+  expect(await page.evaluate(()=>(window as any).emailVoice.texts.length)).toBe(0);
+  await page.getByRole('button',{name:'Full message',exact:true}).click();
+  await reader.getByRole('button',{name:'Read displayed email aloud'}).click();
+  await expect(page.getByText('Device speaking · illustrative waves')).toBeVisible();
+  await page.evaluate(()=>(window as any).emailVoice.active.onend());
+  expect(await page.evaluate(()=>(window as any).emailVoice.texts.length)).toBeGreaterThan(1);
+  expect(await page.evaluate(()=>(window as any).emailVoice.texts.join(''))).toContain('fictional example');
+  await page.getByRole('button',{name:'Summary',exact:true}).click();
+  await expect(page.getByText('Device speaking · illustrative waves')).toHaveCount(0);
+  await reader.getByRole('button',{name:'Read displayed email aloud'}).click();
+  await page.getByRole('button',{name:'Close panel'}).click();
+  expect(await page.evaluate(()=>(window as any).emailVoice.cancels)).toBeGreaterThan(0);
+  await expect(page.getByText('Device speaking · illustrative waves')).toHaveCount(0);
 });

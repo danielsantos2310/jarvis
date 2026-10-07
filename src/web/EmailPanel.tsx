@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { BrowserVoice } from './BrowserVoice.tsx';
 import { HudIcon } from './FloatingWorkspace.tsx';
 type Message = { id: string; subject: string; from: string; date: string; excerpt: string; body?: string; truncated?: boolean };
 type Api = <T>(path: string, body?: unknown, signal?: AbortSignal) => Promise<T>;
-export function EmailPanel({ api }: { api: Api }) {
+export function EmailPanel({ api, onSpeaking }: { api: Api; onSpeaking?:(value:boolean)=>void }) {
   const [status, setStatus] = useState<{configured:boolean;connected:boolean} | null>(null), [busy,setBusy] = useState(false), [error,setError] = useState('');
   const [messages,setMessages] = useState<Message[] | null>(null), [selected,setSelected] = useState<Message | null>(null), [full,setFull] = useState(false);
   const [account,setAccount] = useState('');
@@ -28,7 +29,7 @@ export function EmailPanel({ api }: { api: Api }) {
       {messages?.length === 0 && <p>Your inbox is empty.</p>}
       <div className="service-list">{messages?.map(item => <button key={item.id} disabled={busy} onClick={() => {setSelected(item);setFull(false);}}><strong>{item.subject}</strong><small>{item.from}</small></button>)}</div>
     </>}
-    {message && <div className="sample-email">{__JARVIS_DEMO__ && <span className="tag">FICTIONAL EXAMPLE</span>}<h3>{message.subject}</h3><p className="muted">{message.from}</p><small>{message.date}</small><div className="speech-buttons"><button aria-pressed={!full} onClick={() => setFull(false)}>{__JARVIS_DEMO__ ? 'Summary' : 'Preview'}</button><button disabled={busy} aria-pressed={full} onClick={() => { if (__JARVIS_DEMO__ || selected?.body !== undefined) setFull(true); else void run<Message>(`gmail/messages/${message.id}`,undefined,data => {setSelected(data);setFull(true);}); }}>Full message</button></div><p className="email-body" role="status">{full ? message.body : message.excerpt}</p>{message.truncated && full && <p>Long message shortened to 20,000 characters. Open Gmail for the rest.</p>}</div>}
+    {message && <div className="sample-email">{__JARVIS_DEMO__ && <span className="tag">FICTIONAL EXAMPLE</span>}<h3>{message.subject}</h3><p className="muted">{message.from}</p><small>{message.date}</small><div className="speech-buttons"><button aria-pressed={!full} onClick={() => setFull(false)}>{__JARVIS_DEMO__ ? 'Summary' : 'Preview'}</button><button disabled={busy} aria-pressed={full} onClick={() => { if (__JARVIS_DEMO__ || selected?.body !== undefined) setFull(true); else void run<Message>(`gmail/messages/${message.id}`,undefined,data => {setSelected(data);setFull(true);}); }}>Full message</button></div><p className="email-body" role="status">{full ? message.body : message.excerpt}</p><BrowserVoice key={`${message.id}-${full}`} embedded controlsOpen reply={`${message.subject}. From ${message.from}. ${full ? message.body ?? '' : message.excerpt}`} onSpeaking={onSpeaking}/>{message.truncated && full && <p>Long message shortened to 20,000 characters. Open Gmail for the rest.</p>}</div>}
     {!__JARVIS_DEMO__ && <p className="fineprint">Preview is Gmail’s excerpt, not an AI summary. No email content is sent to an AI model. <a href="https://myaccount.google.com/connections" target="_blank" rel="noopener noreferrer">Manage Google permissions</a></p>}
   </section>;
 }
