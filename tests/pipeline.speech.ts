@@ -24,10 +24,16 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
   expect(transcriptions).toBe(0);
   await expect(page.getByRole('region', { name: 'Microphone test' })).toHaveCount(0);
   await expect(page.locator('.command-note')).toContainText('Local voice panel below');
+  let releaseStatus!:()=>void;const statusGate=new Promise<void>(resolve=>{releaseStatus=resolve;});
+  await page.route('**/api/voice/status',async route=>{await statusGate;await route.continue();});
   await controls.getByRole('button', { name: 'Check voice engines' }).click();
+  await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','thinking');
+  await page.screenshot({path:'artifacts/neural-processing.png'});
+  releaseStatus();
   await expect(controls.getByRole('button', { name: 'Start voice capture' })).toBeEnabled();
   await controls.getByRole('button', { name: 'Start voice capture' }).click();
   await expect(controls.getByRole('button', { name: 'Finish and transcribe' })).toBeVisible();
+  await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','listening');
   await page.waitForTimeout(800);
   await controls.getByRole('button', { name: 'Finish and transcribe' }).click();
   await expect(page.getByLabel('Ask JARVIS')).toHaveValue('add task Voice review check');

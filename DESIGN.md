@@ -123,3 +123,13 @@ Owner-supplied Iron Man desktop and the retrieved JARVIS widget boards informed 
 | Voice motion | src/web/VoiceWaveform.tsx | Actual analyser data or explicit preview | standby, real output, silent preview, reduced motion | Synthetic PCM playback and preview tests |
 
 BrowserVoice also owns read-aloud controls embedded in EmailPanel. Only explicitly selected preview or loaded full-message text is spoken, using browser-reported local voices in bounded 220-character chunks (20,000 total). Changing message/view, closing Email, hiding, lock, pause or unmount cancels playback. Email content is data, never a command. The central waveform indicates illustrative device speech.
+
+## Approved neural visual direction — 7 October 2026
+
+Supersedes the reactor-only art: original cyan wireframe face and luminous core over a dark living neural network, with limited muted-red traveling impulses. Uploaded face/network references image(6), image(7), image(8) were inspected; stock images and watermarks are not embedded. The exact four-state composite could not be retrieved, so the approved written direction and uploaded references guide this implementation.
+
+AmbientBackdrop owns a bounded 190-node canvas field, capped at 25fps and 1.5 device pixel ratio. It stops animation in hidden tabs and renders a static frame for reduced motion. CoreDisplay owns original vector facial geometry, neck mesh, rings, hexagons and sweep. Runtime tokens --neural-ink/cyan/blue/red own the palette.
+
+VoiceWaveform owns state priority: speech (or explicit silent preview), active microphone, actual pending work, then idle. MicrophoneTest reports real input level; SpeechPanel passes a real input/output analyser and transcription/synthesis phase. BrowserVoice passes actual speech events. Processing visuals indicate pending work, not an installed AI mind. No automatic microphone or fabricated recognition.
+
+IDLE, LISTENING, THINKING and SPEAKING are guide labels only: the avatar has no visible state captions. Accessible status remains visually hidden; microphone permission, capture and errors remain readable inside the tool panels. All four effects obey reduced motion and tab visibility. Floating icons, 50% opacity and touch gestures retain their established owners.

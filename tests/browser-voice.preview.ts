@@ -41,8 +41,10 @@ test('device voice uses only local voices, starts explicitly and stops on close,
 
 test('ambient energy moves without playback controls, respects reduced motion, and stays behind touch tools',async({page})=>{
   await page.emulateMedia({reducedMotion:'no-preference'});await page.goto('./');
-  const cloud=page.locator('.ambient-cloud-a');const first=await cloud.evaluate(el=>getComputedStyle(el).transform);
-  await expect.poll(()=>cloud.evaluate(el=>getComputedStyle(el).transform)).not.toBe(first);
+  const field=page.locator('.neural-field');const first=await field.evaluate(el=>(el as HTMLCanvasElement).toDataURL());
+  await expect.poll(()=>field.evaluate(el=>(el as HTMLCanvasElement).toDataURL())).not.toBe(first);
+  await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','idle');
+  await expect(page.locator('.voice-output-heading')).toHaveCSS('clip-path','inset(50%)');
   await expect(page.getByRole('button',{name:/background motion/i})).toHaveCount(0);
   const ribbon=page.locator('.orbital-wave-0');
   const position=await ribbon.evaluate(el=>getComputedStyle(el).transform);
@@ -55,7 +57,7 @@ test('ambient energy moves without playback controls, respects reduced motion, a
   await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Restore icons and reset layout'}).click();
   await page.screenshot({path:'artifacts/ambient-mobile.png'});await openTool(page,'Tasks & reminders');
   await expect(page.getByLabel('Task title')).toBeVisible();
-  await page.emulateMedia({reducedMotion:'reduce'});await expect(cloud).toHaveCSS('animation-name','none');
+  await page.emulateMedia({reducedMotion:'reduce'});const still=await field.evaluate(el=>(el as HTMLCanvasElement).toDataURL());await page.waitForTimeout(150);expect(await field.evaluate(el=>(el as HTMLCanvasElement).toDataURL())).toBe(still);
   await expect(ribbon).toHaveCSS('animation-name','none');
 });
 

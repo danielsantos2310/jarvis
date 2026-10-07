@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { VoiceWaveform } from './VoiceWaveform.tsx';
 const key = (voice: SpeechSynthesisVoice) => `${voice.voiceURI}:${voice.lang}`;
-export function BrowserVoice({ controlsOpen, reply, embedded = false, onSpeaking }: {controlsOpen:boolean;reply:string;embedded?:boolean;onSpeaking?:(value:boolean)=>void}) {
+export function BrowserVoice({ controlsOpen, reply, embedded = false, onSpeaking, listening = false, inputLevel = 0, processing = false }: {controlsOpen:boolean;reply:string;embedded?:boolean;onSpeaking?:(value:boolean)=>void;listening?:boolean;inputLevel?:number;processing?:boolean}) {
   const [target,setTarget] = useState<HTMLElement | null>(null), [voices,setVoices] = useState<SpeechSynthesisVoice[]>([]), [selected,setSelected] = useState('');
   const [rate,setRate] = useState(1), [speaking,setSpeaking] = useState(false), [busy,setBusy] = useState(false), [note,setNote] = useState('Choose a device voice, then test it.');
   const queue = useRef<string[]>([]);
@@ -53,5 +53,5 @@ export function BrowserVoice({ controlsOpen, reply, embedded = false, onSpeaking
     <p className="fineprint">{embedded && "Reads only the displayed preview or loaded full message, up to 20,000 characters, in short sections. Email text is spoken as content and never executed as commands. "}Waves animate with speech start/stop as an illustration; the browser does not give this test the audio samples. Piper will retain its actual audio-reactive waves. Closing this panel, hiding the tab, pausing or locking stops playback.</p>
     <a href="https://support.microsoft.com/en-gb/education/learning-accelerators/download-languages-and-voices-for-immersive-reader-read-mode-and-read-aloud" target="_blank" rel="noopener noreferrer">Install Windows speech voices</a>
   </section>;
-  return embedded ? controls : <><VoiceWaveform speaking={speaking} connected={voices.length>0} illustrative/>{target && createPortal(controls,target)}</>;
+  return embedded ? controls : <><VoiceWaveform listening={listening} inputLevel={inputLevel} processing={processing} speaking={speaking} connected={voices.length>0} illustrative/>{target && createPortal(controls,target)}</>;
 }

@@ -43,7 +43,9 @@ test('microphone requires a click, handles denial/cancel, and stops on timeout a
   await page.clock.install();
   await panel.getByRole('button',{name:'Start microphone test'}).click();
   await expect(panel.getByRole('button',{name:'Stop microphone',exact:true})).toBeVisible();
+  await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','listening');
   await page.clock.fastForward(31000);
+  await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','idle');
   await expect(panel.getByRole('status')).toContainText('30-second test finished');
   await panel.getByRole('button',{name:'Start microphone test'}).click();
   await expect(panel.getByRole('button',{name:'Stop microphone',exact:true})).toBeVisible();
