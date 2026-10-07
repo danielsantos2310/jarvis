@@ -126,9 +126,9 @@ BrowserVoice also owns read-aloud controls embedded in EmailPanel. Only explicit
 
 ## Approved neural visual direction — 7 October 2026
 
-Supersedes the reactor-only art: original cyan wireframe face and luminous core over a dark living neural network, with limited muted-red traveling impulses. Uploaded face/network references image(6), image(7), image(8) were inspected; stock images and watermarks are not embedded. The exact four-state composite could not be retrieved, so the approved written direction and uploaded references guide this implementation.
+The owner rejected the coarse vector face. The exact reference image(10).png now guides the avatar: a sculpted cyan holographic human face, dense fine triangular mesh, luminous eyes and forehead node, layered technical rings with small red accents. The approved living neural background remains unchanged. State names in references are guidance only, never visible UI labels.
 
-AmbientBackdrop owns a bounded 190-node canvas field, capped at 25fps and 1.5 device pixel ratio. It stops animation in hidden tabs and renders a static frame for reduced motion. CoreDisplay owns original vector facial geometry, neck mesh, rings, hexagons and sweep. Runtime tokens --neural-ink/cyan/blue/red own the palette.
+AmbientBackdrop owns a bounded 190-node canvas field, capped at 25fps and 1.5 device pixel ratio. It stops animation in hidden tabs and renders a static frame for reduced motion. CoreDisplay owns a transparent generated portrait asset, independently animated SVG rings, ticks, hexagons and scan sweep. The portrait is rendered artwork, not a rigged 3D or lip-synced model. Voice motion uses the existing analyser-driven waveform; device speech remains explicitly illustrative. Runtime tokens --neural-ink/cyan/blue/red own the palette.
 
 VoiceWaveform owns state priority: speech (or explicit silent preview), active microphone, actual pending work, then idle. MicrophoneTest reports real input level; SpeechPanel passes a real input/output analyser and transcription/synthesis phase. BrowserVoice passes actual speech events. Processing visuals indicate pending work, not an installed AI mind. No automatic microphone or fabricated recognition.
 
