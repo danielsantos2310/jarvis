@@ -116,46 +116,38 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 .hud-circuit {opacity:.25;}
 .spatial-voice .voice-output-heading {position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;}
 .spatial-voice .reactor-art .core-display svg {filter:drop-shadow(0 0 7px #23b9e536);}
-.neural-avatar .core-ring,.neural-avatar .core-ring-inner {stroke:var(--neural-cyan);stroke-width:.7;opacity:.3;animation:none;}
-.avatar-face {animation:avatar-float 7s ease-in-out infinite alternate;transform-origin:180px 180px;}
-.avatar-eyes {fill:#7feaff;fill-opacity:.28;stroke:#b0f6ff;stroke-width:1.2;filter:drop-shadow(0 0 4px #6ceaff);}
-.avatar-heart,.avatar-halo {animation:avatar-breathe 4s ease-in-out infinite alternate;}
-.thought-geometry,.thought-sweep {opacity:0;transform-origin:180px 180px;}
-.spatial-voice .reactive-rings {opacity:0;}.spatial-voice .speech-wave {opacity:0;top:65%;left:0;width:100%;}
-.spatial-voice .reactor-art .orbital-waves {inset:-18%;width:136%;height:136%;opacity:.24;}
+/* Shared voice layers remain the only audio-envelope owner. */
+.spatial-voice .reactive-rings {opacity:0;}
+.spatial-voice .speech-wave {opacity:0;top:70%;left:9%;width:82%;}
+.spatial-voice .reactor-art .orbital-waves {inset:-18%;width:136%;height:136%;opacity:.18;}
 .orbital-wave {animation-duration:45s;stroke-width:.65;}
-[data-visual-state=listening] .reactive-rings {opacity:.9;}
-[data-visual-state=listening] .orbital-waves {opacity:.65!important;}
-[data-visual-state=listening] .avatar-eyes {fill-opacity:.7;}
-[data-visual-state=thinking] .thought-geometry {opacity:.45;animation:orbital-spin 12s linear infinite;}
-[data-visual-state=thinking] .thought-sweep {opacity:1;animation:orbital-spin 3s linear infinite;}
-[data-visual-state=thinking] .core-ring {opacity:.8;animation:orbital-spin 6s linear infinite;}
-[data-visual-state=thinking] .core-ring-inner {animation:orbital-spin 9s linear infinite reverse;opacity:.6;}
+[data-visual-state=listening] .reactive-rings {opacity:.7;}
+[data-visual-state=listening] .orbital-waves {opacity:.45!important;}
 [data-visual-state=speaking] .speech-wave,[data-visual-state=speaking] .reactive-rings {opacity:1;}
-[data-visual-state=speaking] .avatar-heart {animation-duration:.5s;filter:drop-shadow(0 0 9px #67e8ff);}
-[data-visual-state=speaking] .avatar-eyes {fill-opacity:.8;}
-@keyframes avatar-float {from {transform:translateY(-2px) rotate(-1deg);}to {transform:translateY(2px) rotate(1deg);}}
-@keyframes avatar-breathe {from {opacity:.45;}to {opacity:1;}}
-@media(prefers-reduced-motion:reduce){.neural-avatar * {animation:none!important;}}
-@media(forced-colors:active){.neural-avatar path,.neural-avatar circle {stroke:CanvasText;}.neural-field {display:none;}}
 
-/* Sculpted hologram: detailed portrait with live, separately rendered instruments. */
-.neural-avatar .core-ring {stroke:#51e4ff;stroke-width:1.8;opacity:.9;animation:orbital-spin 48s linear infinite;filter:drop-shadow(0 0 2px #19c9ff);}
-.neural-avatar .core-ring-inner {stroke:#36c5ee;stroke-width:3;opacity:.55;animation:orbital-spin 64s linear infinite reverse;}
-.avatar-red-orbit {opacity:.75;transform-origin:180px 180px;animation:orbital-spin 80s linear infinite reverse;filter:drop-shadow(0 0 2px #f64e6666);}
-.avatar-data-orbit {opacity:.65;transform-origin:180px 180px;animation:orbital-spin 36s linear infinite;}
-.avatar-portrait {opacity:.93;transition:filter .35s,opacity .35s;}
-.avatar-scan {opacity:0;pointer-events:none;}
-[data-visual-state=listening] .avatar-portrait {filter:brightness(1.16);opacity:1;}
-[data-visual-state=thinking] .avatar-scan {opacity:1;animation:avatar-scan 2.6s ease-in-out infinite;}
-[data-visual-state=thinking] .neural-avatar .core-ring {animation-duration:6s;}
-[data-visual-state=thinking] .neural-avatar .core-ring-inner {animation-duration:9s;}
-[data-visual-state=speaking] .avatar-portrait {animation:avatar-illuminate 1.3s ease-in-out infinite alternate;}
-@keyframes avatar-scan {from {transform:translateY(0);}to {transform:translateY(225px);}}
-@keyframes avatar-illuminate {from {opacity:.88;}to {opacity:1;}}
-@media(prefers-reduced-motion:reduce) {.neural-avatar * {animation:none!important;transition:none!important;}.avatar-scan {display:none;}}
-
-/* The live portrait uses the same reserved square as its no-GPU fallback. */
-.avatar-live-surface {pointer-events:none;overflow:hidden;}
-.avatar-live {display:block;width:100%;height:100%;}
-.neural-avatar:has(.avatar-live[data-ready=true]) .avatar-portrait {opacity:0;animation:none;}
+/* Energy core: one luminous source, stationary housing, two slow bearings. */
+:root {--energy-cyan:#48d8ef;--energy-ice:#c5fbff;--energy-muted:#165167;}
+.energy-bearing,.energy-rotor,.energy-particles,.energy-response,.energy-idle-breath,.energy-focus,.energy-ripples circle {transform-origin:180px 180px;}
+.energy-bearing {animation:orbital-spin 70s linear infinite;}
+.energy-rotor {animation:orbital-spin 48s linear infinite reverse;}
+.energy-particles {opacity:.45;transition:opacity .6s;}
+.energy-idle-breath {animation:energy-breathe 5s ease-in-out infinite alternate;}
+.energy-response {transform:scale(calc(1 + var(--core-energy,0)*.16));transition:transform 140ms ease-out;}
+.energy-source {filter:drop-shadow(0 0 8px #3fe2ff88);}
+.energy-bloom {opacity:calc(.55 + var(--core-energy,0)*.45);transition:opacity 180ms;}
+.energy-focus {opacity:0;transition:transform .55s ease,opacity .35s;}
+.energy-core[data-focused=true] .energy-focus {opacity:.9;}
+.energy-ripples {opacity:0;transition:opacity .4s;}
+.energy-ripples circle {stroke-width:.8;}
+[data-visual-state=listening] .energy-ripples {opacity:.6;}
+[data-visual-state=listening] .energy-ripples circle {animation:energy-ripple 3s ease-out infinite;}
+[data-visual-state=listening] .energy-ripples circle:nth-child(2) {animation-delay:-1.5s;}
+[data-visual-state=thinking] .energy-rotor {animation-duration:5s;}
+[data-visual-state=thinking] .energy-bearing {animation-duration:12s;}
+[data-visual-state=thinking] .energy-particles {opacity:1;animation:orbital-spin 9s linear infinite;}
+[data-visual-state=thinking] .energy-bloom {opacity:.9;}
+[data-visual-state=speaking] .energy-idle-breath {animation:none;}
+@keyframes energy-breathe {from {transform:scale(.98);opacity:.85;}to {transform:scale(1.02);opacity:1;}}
+@keyframes energy-ripple {from {transform:scale(1);opacity:.65;}to {transform:scale(1.9);opacity:0;}}
+@media(prefers-reduced-motion:reduce) {.energy-core * {animation:none!important;transition:none!important;}.energy-response {transform:none;}.energy-ripples {display:none;}}
+@media(forced-colors:active) {.energy-core circle,.energy-core path {stroke:CanvasText;filter:none;}.energy-source {fill:Highlight;}.energy-bloom {display:none;}.neural-field {display:none;}}

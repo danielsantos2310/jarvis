@@ -9,6 +9,7 @@ export function VoiceWaveform({ analyser, speaking = false, connected = false, i
   const paths = useRef<(SVGPathElement | null)[]>([]);
   const halo = useRef<SVGCircleElement | null>(null);
   const spokes = useRef<SVGPathElement | null>(null);
+  const surface = useRef<HTMLElement | null>(null);
   const active = speaking || preview || listening;
   const state = speaking || preview ? 'speaking' : listening ? 'listening' : processing ? 'thinking' : 'idle';
   useEffect(() => {
@@ -28,6 +29,7 @@ export function VoiceWaveform({ analyser, speaking = false, connected = false, i
         last = time;
         if (active && analyser && data) analyser.getByteTimeDomainData(data);
         const energy = active ? data && (speaking || listening) ? Math.min(1, Math.sqrt(data.reduce((total, v) => total + ((v - 128) / 128) ** 2, 0) / data.length) * 4) : listening ? inputLevel/100 : .35 + .25 * Math.sin(time / 170) : 0;
+        surface.current?.style.setProperty('--core-energy', String(reduced || document.hidden ? 0 : energy));
         halo.current?.setAttribute('r', String(135 + energy * 18));
         halo.current?.setAttribute('stroke-width', String(1 + energy * 3));
         spokes.current?.setAttribute('d', Array.from({ length: 80 }, (_, i) => {
@@ -55,8 +57,8 @@ export function VoiceWaveform({ analyser, speaking = false, connected = false, i
     draw(0);
     return () => { cancelAnimationFrame(frame); preference.removeEventListener('change', restart); document.removeEventListener('visibilitychange', restart); };
   }, [active, analyser, speaking, listening, inputLevel]);
-  return <section data-visual-state={state} className={`voice-output ${hidden ? 'reactor-hidden' : ''} ${active ? 'voice-output-active' : ''}`} aria-label="JARVIS voice visualization">
-    <div className="reactor-art"><svg className="orbital-waves" viewBox="0 0 600 600" aria-hidden="true">{[0,1,2,3].map(layer=><g key={layer} className={`orbital-wave orbital-wave-${layer}`}><path d={Array.from({length:241},(_,i)=>{const a=i/240*Math.PI*2;const r=218+layer*17+Math.sin(a*6+layer)*8+Math.sin(a*3-layer)*12;return `${i ? 'L' : 'M'}${300+Math.cos(a)*r},${300+Math.sin(a)*r}`;}).join(' ')+'Z'}/></g>)}</svg><CoreDisplay processing={processing && !speaking && !preview && !listening} speaking={speaking || preview} analyser={speaking ? analyser : undefined}/><svg className="reactive-rings" viewBox="0 0 360 360" aria-hidden="true"><circle ref={halo} cx="180" cy="180" r="135"/><path ref={spokes}/></svg></div>
+  return <section ref={surface} data-visual-state={state} className={`voice-output ${hidden ? 'reactor-hidden' : ''} ${active ? 'voice-output-active' : ''}`} aria-label="JARVIS voice visualization">
+    <div className="reactor-art"><svg className="orbital-waves" viewBox="0 0 600 600" aria-hidden="true">{[0,1,2,3].map(layer=><g key={layer} className={`orbital-wave orbital-wave-${layer}`}><path d={Array.from({length:241},(_,i)=>{const a=i/240*Math.PI*2;const r=218+layer*17+Math.sin(a*6+layer)*8+Math.sin(a*3-layer)*12;return `${i ? 'L' : 'M'}${300+Math.cos(a)*r},${300+Math.sin(a)*r}`;}).join(' ')+'Z'}/></g>)}</svg><CoreDisplay/><svg className="reactive-rings" viewBox="0 0 360 360" aria-hidden="true"><circle ref={halo} cx="180" cy="180" r="135"/><path ref={spokes}/></svg></div>
     <div className="voice-output-heading"><span>VOICE OUTPUT</span><span role="status">{listening ? 'Microphone active' : processing ? 'Processing request' : speaking ? illustrative ? 'Device speaking · illustrative waves' : 'JARVIS speaking' : preview ? 'Waveform preview · silent' : connected ? 'Standby · microphone off' : 'Standby · speech not connected'}</span></div>
     <svg className="speech-wave" viewBox="0 0 600 96" preserveAspectRatio="none" aria-hidden="true">
       <path className="voice-baseline" d="M0 48H600"/>
