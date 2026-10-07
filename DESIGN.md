@@ -68,7 +68,7 @@ Full-screen spatial workspace with fourteen independently draggable circular too
 
 ## Elevation & Depth
 
-One restrained halo around the core and thin cyan corner marks distinguish the hero. Utility cards have quiet borders and tonal backgrounds. At the owner's request, AmbientBackdrop adds slow cyan/blue/teal cloud motion inspired by a generating-image shimmer. Local CSS owns the effect via --ambient-cyan, --ambient-blue and --ambient-teal; no downloaded images or telemetry. A pause button, reduced-motion preference and hidden-tab pause govern animation. No glowing body text or fake charts. Dialog backdrop separates high consequence controls from the workspace.
+One restrained halo around the core and thin cyan corner marks distinguish the hero. Utility cards have quiet borders and tonal backgrounds. At the owner's request, AmbientBackdrop adds clearly visible flowing cyan energy ribbons, traveling highlights, particles and brighter cyan/blue/teal cloud motion inspired by a generating-image shimmer. Local CSS owns the effect via --ambient-cyan, --ambient-blue and --ambient-teal; no downloaded images or telemetry. The owner rejected the faint first version and requested removal of its play/pause button. Motion runs automatically with no background controls; reduced-motion preference and hidden-tab pause remain. No glowing body text or fake charts. Dialog backdrop separates high consequence controls from the workspace.
 
 ## Shapes
 

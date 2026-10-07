@@ -39,18 +39,22 @@ test('device voice uses only local voices, starts explicitly and stops on close,
   expect(requests).toEqual([]);
 });
 
-test('ambient background moves, pauses, respects reduced motion, and stays behind touch tools',async({page})=>{
+test('ambient energy moves without playback controls, respects reduced motion, and stays behind touch tools',async({page})=>{
   await page.emulateMedia({reducedMotion:'no-preference'});await page.goto('./');
   const cloud=page.locator('.ambient-cloud-a');const first=await cloud.evaluate(el=>getComputedStyle(el).transform);
   await expect.poll(()=>cloud.evaluate(el=>getComputedStyle(el).transform)).not.toBe(first);
-  await page.getByRole('button',{name:'Pause background motion'}).click();
-  await expect(cloud).toHaveCSS('animation-play-state','paused');
-  await page.getByRole('button',{name:'Play background motion'}).click();
-  await expect(cloud).toHaveCSS('animation-play-state','running');
+  await expect(page.getByRole('button',{name:/background motion/i})).toHaveCount(0);
+  const ribbon=page.locator('.ambient-ribbon-0');
+  const position=await ribbon.evaluate(el=>getComputedStyle(el).transform);
+  await expect.poll(()=>ribbon.evaluate(el=>getComputedStyle(el).transform)).not.toBe(position);
+  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
+  await expect(ribbon).toHaveCSS('animation-play-state','paused');
+  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+  await expect(ribbon).toHaveCSS('animation-play-state','running');
   await page.screenshot({path:'artifacts/ambient-desktop.png'});
   await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Restore icons and reset layout'}).click();
   await page.screenshot({path:'artifacts/ambient-mobile.png'});await openTool(page,'Tasks & reminders');
   await expect(page.getByLabel('Task title')).toBeVisible();
   await page.emulateMedia({reducedMotion:'reduce'});await expect(cloud).toHaveCSS('animation-name','none');
-  await expect(page.getByRole('button',{name:'Background motion disabled by system preference'})).toBeDisabled();
+  await expect(ribbon).toHaveCSS('animation-name','none');
 });
