@@ -60,7 +60,8 @@ test('ambient energy moves without playback controls, respects reduced motion, a
   await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Restore icons and reset layout'}).click();
   await page.screenshot({path:'artifacts/ambient-mobile.png'});await openTool(page,'Tasks & reminders');
   await expect(page.getByLabel('Task title')).toBeVisible();
-  await page.emulateMedia({reducedMotion:'reduce'});const still=await field.evaluate(el=>(el as HTMLCanvasElement).toDataURL());await page.waitForTimeout(150);expect(await field.evaluate(el=>(el as HTMLCanvasElement).toDataURL())).toBe(still);
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await expect.poll(async()=>{const still=await field.evaluate(el=>(el as HTMLCanvasElement).toDataURL());await page.waitForTimeout(150);return field.evaluate((el,previous)=>(el as HTMLCanvasElement).toDataURL()===previous,still);}).toBe(true);
   await expect(ribbon).toHaveCSS('animation-name','none');
 });
 

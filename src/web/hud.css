@@ -154,3 +154,8 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 @keyframes avatar-scan {from {transform:translateY(0);}to {transform:translateY(225px);}}
 @keyframes avatar-illuminate {from {opacity:.88;}to {opacity:1;}}
 @media(prefers-reduced-motion:reduce) {.neural-avatar * {animation:none!important;transition:none!important;}.avatar-scan {display:none;}}
+
+/* The live portrait uses the same reserved square as its no-GPU fallback. */
+.avatar-live-surface {pointer-events:none;overflow:hidden;}
+.avatar-live {display:block;width:100%;height:100%;}
+.neural-avatar:has(.avatar-live[data-ready=true]) .avatar-portrait {opacity:0;animation:none;}

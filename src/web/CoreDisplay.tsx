@@ -1,7 +1,8 @@
+import { LivePortrait } from './LivePortrait.tsx';
 const portrait = new URL('./assets/neural-avatar.webp', import.meta.url).href;
 
-// The detailed portrait stays still inside independently animated telemetry rings.
-export function CoreDisplay() {
+// Preserve the approved artwork, with a live deformation layer and still fallback.
+export function CoreDisplay({ speaking = false, analyser }: { speaking?: boolean; analyser?: AnalyserNode }) {
   return <div className="core-display neural-avatar" aria-hidden="true">
     <svg viewBox="0 0 360 360" fill="none" focusable="false">
       <defs>
@@ -22,12 +23,12 @@ export function CoreDisplay() {
       </g>
       <g clipPath="url(#avatar-aperture)">
         <image className="avatar-portrait" href={portrait} x="18" y="20" width="324" height="324" preserveAspectRatio="xMidYMid meet"/>
+        <LivePortrait speaking={speaking} analyser={analyser}/>
         <rect className="avatar-scan" x="55" y="58" width="250" height="28" fill="url(#avatar-scan)"/>
       </g>
       <g className="avatar-locks" stroke="#63e7ff" strokeWidth="1.3">
         <path d="M29 168V192M24 174V186M331 168V192M336 174V186M168 29H192M174 24H186M168 331H192"/>
       </g>
-      <circle className="avatar-heart" cx="180" cy="111" r="2" fill="#b1faff"/>
       <g className="thought-geometry" stroke="#48d8ff" strokeWidth=".65">
         {[145,175].map((r,i)=><polygon key={r} points={Array.from({length:6},(_,n)=>`${180+Math.cos(n*Math.PI/3)*r},${180+Math.sin(n*Math.PI/3)*r}`).join(' ')} transform={`rotate(${i*15} 180 180)`}/>)}
       </g>
