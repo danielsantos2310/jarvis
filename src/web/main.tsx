@@ -56,6 +56,7 @@ function Icon({ kind }: { kind: string }) {
   return <svg className="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[kind] ?? paths.grid}</svg>;
 }
 function App() {
+  const [emailSpeaking,setEmailSpeaking] = useState(false);
   const [auth, setAuth] = useState<Auth | null>(null);
   const authRef = useRef<Auth | null>(null); const generation = useRef(0); const snapshotRequest = useRef(0);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
@@ -187,7 +188,7 @@ function App() {
     </div></main>
   </div>;
   return <FloatingWorkspace active={activePanel} onOpen={setActivePanel} onControls={() => setControls(true)} onLock={() => void lock()}
-    voice={!__JARVIS_DEMO__ && online && snapshot?.grant && !snapshot.paused && snapshot.services.voice === 'configured'
+    voice={emailSpeaking ? <VoiceWaveform speaking connected illustrative/> : !__JARVIS_DEMO__ && online && snapshot?.grant && !snapshot.paused && snapshot.services.voice === 'configured'
       ? <SpeechPanel controlsOpen={activePanel === 'microphone'} csrf={auth.csrf ?? ''} onTranscript={text => { setCommand(text); setActivePanel('command'); setTimeout(() => document.getElementById('command')?.focus(), 0); }} reply={messages.at(-1)?.text ?? ''}/>
       : online && snapshot?.grant && !snapshot.paused ? <BrowserVoice controlsOpen={activePanel === 'microphone'} reply={messages.at(-1)?.text ?? ''}/> : <VoiceWaveform/>} notices={<>
       {error && <div className="error banner" role="alert">{error}<button className="quiet" onClick={() => setError('')} aria-label="Dismiss error">×</button></div>}
@@ -221,7 +222,7 @@ function App() {
           </section></>,
       activity: <section id="activity" className="card activity"><div className="card-heading"><h2>Recent activity</h2><span className="tag">METADATA ONLY</span></div><div className="activity-list">{snapshot?.audit.map((a, i) => <div key={`${a.at}-${i}`}><span className={`dot ${a.decision === 'denied' ? 'warning' : ''}`}/><strong>{a.action.replaceAll('.', ' ')}</strong><span>{a.decision}</span><time>{new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(a.at)}</time></div>)}</div><p className="fineprint">Task titles and command text are excluded from the audit log.</p></section>,
       microphone: <>{online && snapshot?.grant && !snapshot.paused && (__JARVIS_DEMO__ || snapshot.services.voice !== 'configured') ? <><div id="browser-voice-controls"/>{activePanel === 'microphone' && <MicrophoneTest publicPreview={__JARVIS_DEMO__}/>}</> : snapshot?.services.voice === 'configured' ? <div id="speech-controls"/> : <p>Microphone unavailable. Check connection and workspace permission in Controls.</p>}</>,
-      email: activePanel === 'email' && online && snapshot?.grant && !snapshot.paused ? <EmailPanel api={api}/> : <p>Resume workspace access to use email.</p>,
+      email: activePanel === 'email' && online && snapshot?.grant && !snapshot.paused ? <EmailPanel api={api} onSpeaking={setEmailSpeaking}/> : <p>Resume workspace access to use email.</p>,
       calendar: <section className="card"><h2>Calendar</h2><p className="muted">Local reminders · external calendar not connected</p>{tasks.filter(t => t.dueAt && t.state === 'active').sort((a,b) => a.dueAt! - b.dueAt!).map(t => <div className="notice" key={t.id}><div><strong>{t.title}</strong><small>{timeLabel(t.dueAt!, t.timezone)} · {t.timezone}</small></div></div>)}{!tasks.some(t => t.dueAt && t.state === 'active') && <p>No upcoming local reminders.</p>}<button onClick={() => setActivePanel('tasks')}>Manage reminders</button></section>,
       weather: activePanel === 'weather' && snapshot?.grant && !snapshot.paused ? <WeatherPanel/> : <p>Resume workspace access to use weather.</p>,
       music: activePanel === 'music' && snapshot?.grant && !snapshot.paused ? <MusicPanel/> : <p>Resume workspace access to use music.</p>,

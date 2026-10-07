@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 /** Output visualization only. Pass the speech player's analyser and playing state;
  * this component never opens a microphone, plays audio, or connects to a server. */
 export function VoiceWaveform({ analyser, speaking = false, connected = false, illustrative = false }: { analyser?: AnalyserNode; speaking?: boolean; connected?: boolean; illustrative?: boolean }) {
+  const [hidden,setHidden] = useState(document.hidden);
   const [preview, setPreview] = useState(false);
   const paths = useRef<(SVGPathElement | null)[]>([]);
   const halo = useRef<SVGCircleElement | null>(null);
@@ -47,14 +48,14 @@ export function VoiceWaveform({ analyser, speaking = false, connected = false, i
       }
       if (active && !reduced && !document.hidden) frame = requestAnimationFrame(draw);
     };
-    const restart = () => { cancelAnimationFrame(frame); draw(0); };
+    const restart = () => { setHidden(document.hidden); cancelAnimationFrame(frame); draw(0); };
     preference.addEventListener('change', restart);
     document.addEventListener('visibilitychange', restart);
     draw(0);
     return () => { cancelAnimationFrame(frame); preference.removeEventListener('change', restart); document.removeEventListener('visibilitychange', restart); };
   }, [active, analyser, speaking]);
-  return <section className={`voice-output ${active ? 'voice-output-active' : ''}`} aria-label="JARVIS voice visualization">
-    <div className="reactor-art"><CoreDisplay/><svg className="reactive-rings" viewBox="0 0 360 360" aria-hidden="true"><circle ref={halo} cx="180" cy="180" r="135"/><path ref={spokes}/></svg></div>
+  return <section className={`voice-output ${hidden ? 'reactor-hidden' : ''} ${active ? 'voice-output-active' : ''}`} aria-label="JARVIS voice visualization">
+    <div className="reactor-art"><svg className="orbital-waves" viewBox="0 0 600 600" aria-hidden="true">{[0,1,2,3].map(layer=><g key={layer} className={`orbital-wave orbital-wave-${layer}`}><path d={Array.from({length:241},(_,i)=>{const a=i/240*Math.PI*2;const r=218+layer*17+Math.sin(a*6+layer)*8+Math.sin(a*3-layer)*12;return `${i ? 'L' : 'M'}${300+Math.cos(a)*r},${300+Math.sin(a)*r}`;}).join(' ')+'Z'}/></g>)}</svg><CoreDisplay/><svg className="reactive-rings" viewBox="0 0 360 360" aria-hidden="true"><circle ref={halo} cx="180" cy="180" r="135"/><path ref={spokes}/></svg></div>
     <div className="voice-output-heading"><span>VOICE OUTPUT</span><span role="status">{speaking ? illustrative ? 'Device speaking · illustrative waves' : 'JARVIS speaking' : preview ? 'Waveform preview · silent' : connected ? 'Standby · microphone off' : 'Standby · speech not connected'}</span></div>
     <svg className="speech-wave" viewBox="0 0 600 96" preserveAspectRatio="none" aria-hidden="true">
       <path className="voice-baseline" d="M0 48H600"/>
