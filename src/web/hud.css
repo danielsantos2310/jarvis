@@ -138,3 +138,19 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 @keyframes avatar-breathe {from {opacity:.45;}to {opacity:1;}}
 @media(prefers-reduced-motion:reduce){.neural-avatar * {animation:none!important;}}
 @media(forced-colors:active){.neural-avatar path,.neural-avatar circle {stroke:CanvasText;}.neural-field {display:none;}}
+
+/* Sculpted hologram: detailed portrait with live, separately rendered instruments. */
+.neural-avatar .core-ring {stroke:#51e4ff;stroke-width:1.8;opacity:.9;animation:orbital-spin 48s linear infinite;filter:drop-shadow(0 0 2px #19c9ff);}
+.neural-avatar .core-ring-inner {stroke:#36c5ee;stroke-width:3;opacity:.55;animation:orbital-spin 64s linear infinite reverse;}
+.avatar-red-orbit {opacity:.75;transform-origin:180px 180px;animation:orbital-spin 80s linear infinite reverse;filter:drop-shadow(0 0 2px #f64e6666);}
+.avatar-data-orbit {opacity:.65;transform-origin:180px 180px;animation:orbital-spin 36s linear infinite;}
+.avatar-portrait {opacity:.93;transition:filter .35s,opacity .35s;}
+.avatar-scan {opacity:0;pointer-events:none;}
+[data-visual-state=listening] .avatar-portrait {filter:brightness(1.16);opacity:1;}
+[data-visual-state=thinking] .avatar-scan {opacity:1;animation:avatar-scan 2.6s ease-in-out infinite;}
+[data-visual-state=thinking] .neural-avatar .core-ring {animation-duration:6s;}
+[data-visual-state=thinking] .neural-avatar .core-ring-inner {animation-duration:9s;}
+[data-visual-state=speaking] .avatar-portrait {animation:avatar-illuminate 1.3s ease-in-out infinite alternate;}
+@keyframes avatar-scan {from {transform:translateY(0);}to {transform:translateY(225px);}}
+@keyframes avatar-illuminate {from {opacity:.88;}to {opacity:1;}}
+@media(prefers-reduced-motion:reduce) {.neural-avatar * {animation:none!important;transition:none!important;}.avatar-scan {display:none;}}
