@@ -29,6 +29,7 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
   await page.route('**/api/voice/status',async route=>{await statusGate;await route.continue();});
   await controls.getByRole('button', { name: 'Check voice engines' }).click();
   await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','thinking');
+  await expect(page.locator('.energy-core')).toHaveCSS('--energy-cyan','#b4a0ff');
   await expect(page.locator('.energy-rotor')).toHaveCSS('animation-duration','5s');
   await page.screenshot({path:'artifacts/neural-processing.png'});
   releaseStatus();
@@ -37,6 +38,7 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
   await controls.getByRole('button', { name: 'Start voice capture' }).click();
   await expect(controls.getByRole('button', { name: 'Finish and transcribe' })).toBeVisible();
   await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','listening');
+  await expect(page.locator('.energy-core')).toHaveCSS('--energy-cyan','#65baff');
   await page.waitForTimeout(800);
   await controls.getByRole('button', { name: 'Finish and transcribe' }).click();
   await expect(page.getByLabel('Ask JARVIS')).toHaveValue('add task Voice review check');

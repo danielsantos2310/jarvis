@@ -39,6 +39,8 @@ export async function createApp(options: AppOptions) {
   app.addHook('onRequest', async (req, reply) => {
     reply.header('Cache-Control', 'no-store').header('X-Content-Type-Options', 'nosniff')
       .header('Referrer-Policy', 'no-referrer').header('X-Frame-Options', 'DENY')
+      .header('Cross-Origin-Resource-Policy', 'same-origin')
+      .header('X-DNS-Prefetch-Control', 'off')
       .header('Permissions-Policy', 'microphone=(self), camera=(), geolocation=(self)')
       .header('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.open-meteo.com; frame-src https://www.youtube-nocookie.com; font-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; object-src 'none'");
     if (req.headers.host !== `127.0.0.1:${port}`) throw new AppError(403, 'HOST_DENIED');

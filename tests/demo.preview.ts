@@ -77,7 +77,7 @@ test('floating icons drag, hide, restore, open sample tools and animate without 
   await expect(email).toHaveCount(1);
   await expect(page.getByText('No email account connected.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Full message', exact: true }).click();
-  await expect(page.locator('.sample-email [role=status]')).toContainText('fictional example');
+  await expect(page.locator('.sample-email .email-body[role=status]')).toContainText('fictional example');
   await page.screenshot({ path: 'artifacts/floating-email.png' });
   await page.getByRole('button', { name: 'Expand panel', exact: true }).click();
   await expect(page.locator('.hud-panel')).toHaveClass(/is-expanded/);

@@ -142,7 +142,7 @@ The owner rejected simulated mouth opening. This supersedes the earlier audio-dr
 
 The portrait uses fine dotted shading and faint mesh detail, with brighter eyes to preserve identity. Actual pending work illuminates a sparse internal network across the forehead and upper head, with travelling pulses and a 250ms transition. Speaking/listening take priority; processing lights fade when pending work ends. These effects communicate activity, not biological cognition or a connected AI model. Background, widget behavior, subtle gaze and blinking are unchanged. Reduced motion keeps a neutral still portrait and existing accessible status announcements.
 
-## Current identity: energy core — 7 October 2026
+## Previous identity: energy core — 7 October 2026
 
 The owner rejected the human face and selected an abstract energy core. This section supersedes all portrait, mouth, dotted-face and forehead directions above. The signature is now a luminous cyan energy source inside a dark instrument chamber: fixed housing, three containment arcs, slow counter-rotating bearings, fine calibration marks and sparse particles. No face, lip animation, portrait image or WebGL layer is rendered. The old portrait asset remains only as historical source material.
 
@@ -151,3 +151,9 @@ CoreDisplay is the single SVG owner. Its gradients have instance-specific IDs; s
 Idle uses a five-second breathing cycle and 48/70-second rotations. Listening adds expanding circular ripples and real microphone energy. Pending work accelerates selected rings to 5/12 seconds and circulates particles. Speaking scales the center by up to 16%, brightens its halo, and retains the existing waveform. Device speech and explicit silent preview remain illustrative; local PCM drives actual output response. No visible state words, unsolicited microphone permission or invented recognition.
 
 The approved neural background, fourteen draggable touch widgets, 50% resting widget opacity and existing service panels remain intact. Reduced motion disables decorative motion and center scaling; hidden tabs pause it. Accessible status remains available. Tests run with WebGL disabled and cover desktop/mobile, touch, state transitions, real audio output, reduced motion and hidden-tab pause.
+
+## Current identity: open heartbeat reactor — 8 October 2026
+
+The solid sphere and dark chamber are superseded by a completely open SVG reactor. Only thin coils, arcs and small particles are painted; the neural background remains visible through the center. A single parent animation supplies two soft glow peaks every 3.2 seconds, keeping all reactor elements synchronized. Audio scales the inner coils by at most 4.5%, without filling the aperture.
+
+CoreDisplay retains ownership; hud.css maps --energy-cyan/ice/muted per real activity: idle teal (#45bdbb), listening blue (#65baff), pending work lavender (#b4a0ff), speaking ice cyan (#87f4ff). Color transitions take 700ms. Existing ring/ripple patterns and accessible status also distinguish activity; there are no visible state captions. The heartbeat does not restart on state changes. Reduced motion disables it and hidden tabs pause it. Background and all widget behavior remain unchanged.

@@ -11,6 +11,7 @@
     "start": "node --disable-sigusr1 --disable-proto=throw src/core/server.ts",
     "dev": "npm run build && npm start",
     "typecheck": "tsc --noEmit",
+    "security:review": "node scripts/security-review.ts",
     "test": "node --disable-sigusr1 --test --test-concurrency=1 tests/*.test.ts",
     "recover": "node --disable-sigusr1 src/core/recover.ts",
     "check": "npm run build && npm test",
