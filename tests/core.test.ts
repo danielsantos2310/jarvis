@@ -193,6 +193,12 @@ test('synthetic presence expires and never acquires identity, credentials or cap
     assert.match(String(r.headers['permissions-policy']), /microphone=\(self\)/);
     assert.match(String(r.headers['permissions-policy']), /camera=\(\)/);
     assert.match(String(r.headers['cache-control']), /no-store/);
+    assert.equal(r.headers['cross-origin-resource-policy'], 'same-origin');
+    assert.equal(r.headers['x-dns-prefetch-control'], 'off');
+    assert.equal(r.headers['x-frame-options'], 'DENY');
+    assert.equal(r.headers['x-content-type-options'], 'nosniff');
+    assert.match(String(r.headers['content-security-policy']), /frame-ancestors 'none'/);
+    assert.equal((await f.app.inject({url:'/api/openapi.json',headers:{host}})).statusCode,401);
   } finally { await f.close(); }
 });
 test('failed audit write rolls back item, and scheduler storage failure creates no partial delivery', async () => {

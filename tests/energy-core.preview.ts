@@ -5,7 +5,10 @@ test('energy core works without WebGL and responds to selection, speech preview 
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await page.emulateMedia({reducedMotion:'no-preference'});await page.goto('./');
   const core=page.locator('.energy-core'),surface=page.locator('.voice-output'),rotor=core.locator('.energy-rotor');
-  await expect(core).toBeVisible();await expect(core.locator('image,canvas,foreignObject')).toHaveCount(0);
+  await expect(core).toBeVisible();
+  await expect(core.locator('.energy-heartbeat')).toHaveCount(1);
+  expect(await core.locator('circle').evaluateAll(nodes=>nodes.filter(n=>Number(n.getAttribute('r'))>3).every(n=>getComputedStyle(n).fill==='none'))).toBe(true);
+  await expect(core).toHaveCSS('--energy-cyan','#45bdbb');await expect(core.locator('image,canvas,foreignObject')).toHaveCount(0);
   const rotation=await rotor.evaluate(el=>getComputedStyle(el).transform);
   await expect.poll(()=>rotor.evaluate(el=>getComputedStyle(el).transform)).not.toBe(rotation);
   await page.screenshot({path:'artifacts/energy-idle-desktop.png'});
@@ -15,6 +18,7 @@ test('energy core works without WebGL and responds to selection, speech preview 
   await expect(core).toHaveAttribute('data-focused','false');
   await page.getByRole('button',{name:'Preview waves',exact:true}).click();
   await expect(surface).toHaveAttribute('data-visual-state','speaking');
+  await expect(core).toHaveCSS('--energy-cyan','#87f4ff');
   await expect.poll(async()=>Number(await surface.evaluate(el=>getComputedStyle(el).getPropertyValue('--core-energy')))).toBeGreaterThan(.2);
   await page.screenshot({path:'artifacts/energy-speaking.png'});
   await page.getByRole('button',{name:'Stop preview',exact:true}).click();
@@ -22,7 +26,7 @@ test('energy core works without WebGL and responds to selection, speech preview 
   await expect(surface).toHaveCSS('--core-energy','0');
   await page.emulateMedia({reducedMotion:'reduce'});
   await expect(rotor).toHaveCSS('animation-name','none');
-  await expect(core.locator('.energy-idle-breath')).toHaveCSS('animation-name','none');
+  await expect(core.locator('.energy-heartbeat')).toHaveCSS('animation-name','none');
   await page.getByRole('button',{name:'Preview waves',exact:true}).click();
   await expect(surface).toHaveCSS('--core-energy','0');
   await page.getByRole('button',{name:'Stop preview',exact:true}).click();

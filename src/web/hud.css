@@ -125,29 +125,35 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 [data-visual-state=listening] .orbital-waves {opacity:.45!important;}
 [data-visual-state=speaking] .speech-wave,[data-visual-state=speaking] .reactive-rings {opacity:1;}
 
-/* Energy core: one luminous source, stationary housing, two slow bearings. */
-:root {--energy-cyan:#48d8ef;--energy-ice:#c5fbff;--energy-muted:#165167;}
-.energy-bearing,.energy-rotor,.energy-particles,.energy-response,.energy-idle-breath,.energy-focus,.energy-ripples circle {transform-origin:180px 180px;}
+/* Open reactor: a single heartbeat envelope keeps every coil in phase. */
+.energy-core {--energy-cyan:#45bdbb;--energy-ice:#b1efea;--energy-muted:#20636a;color:var(--energy-cyan);}
+[data-visual-state=listening] .energy-core {--energy-cyan:#65baff;--energy-ice:#c9e9ff;--energy-muted:#285d92;}
+[data-visual-state=thinking] .energy-core {--energy-cyan:#b4a0ff;--energy-ice:#e2d9ff;--energy-muted:#62518d;}
+[data-visual-state=speaking] .energy-core {--energy-cyan:#87f4ff;--energy-ice:#e0ffff;--energy-muted:#267786;}
+.energy-core path,.energy-core circle,.energy-core stop {transition:stroke .7s,fill .7s,stop-color .7s;}
+.energy-bearing,.energy-rotor,.energy-particles,.energy-response,.energy-focus,.energy-ripples circle {transform-origin:180px 180px;}
+.energy-heartbeat {animation:energy-heartbeat 3.2s ease-in-out infinite;}
 .energy-bearing {animation:orbital-spin 70s linear infinite;}
 .energy-rotor {animation:orbital-spin 48s linear infinite reverse;}
 .energy-particles {opacity:.45;transition:opacity .6s;}
-.energy-idle-breath {animation:energy-breathe 5s ease-in-out infinite alternate;}
-.energy-response {transform:scale(calc(1 + var(--core-energy,0)*.16));transition:transform 140ms ease-out;}
-.energy-source {filter:drop-shadow(0 0 8px #3fe2ff88);}
-.energy-bloom {opacity:calc(.55 + var(--core-energy,0)*.45);transition:opacity 180ms;}
+.energy-response {transform:scale(calc(1 + var(--core-energy,0)*.045));transition:transform 140ms ease-out;}
+.energy-aperture {filter:drop-shadow(0 0 3px currentColor);}
 .energy-focus {opacity:0;transition:transform .55s ease,opacity .35s;}
 .energy-core[data-focused=true] .energy-focus {opacity:.9;}
 .energy-ripples {opacity:0;transition:opacity .4s;}
 .energy-ripples circle {stroke-width:.8;}
 [data-visual-state=listening] .energy-ripples {opacity:.6;}
-[data-visual-state=listening] .energy-ripples circle {animation:energy-ripple 3s ease-out infinite;}
-[data-visual-state=listening] .energy-ripples circle:nth-child(2) {animation-delay:-1.5s;}
+[data-visual-state=listening] .energy-ripples circle {animation:energy-ripple 3.2s ease-out infinite;}
+[data-visual-state=listening] .energy-ripples circle:nth-child(2) {animation-delay:-1.6s;}
 [data-visual-state=thinking] .energy-rotor {animation-duration:5s;}
 [data-visual-state=thinking] .energy-bearing {animation-duration:12s;}
 [data-visual-state=thinking] .energy-particles {opacity:1;animation:orbital-spin 9s linear infinite;}
-[data-visual-state=thinking] .energy-bloom {opacity:.9;}
-[data-visual-state=speaking] .energy-idle-breath {animation:none;}
-@keyframes energy-breathe {from {transform:scale(.98);opacity:.85;}to {transform:scale(1.02);opacity:1;}}
+@keyframes energy-heartbeat {
+  0%,42%,100% {opacity:.64;filter:drop-shadow(0 0 1px currentColor);}
+  12% {opacity:1;filter:drop-shadow(0 0 6px currentColor);}
+  23% {opacity:.76;filter:drop-shadow(0 0 2px currentColor);}
+  31% {opacity:.94;filter:drop-shadow(0 0 5px currentColor);}
+}
 @keyframes energy-ripple {from {transform:scale(1);opacity:.65;}to {transform:scale(1.9);opacity:0;}}
 @media(prefers-reduced-motion:reduce) {.energy-core * {animation:none!important;transition:none!important;}.energy-response {transform:none;}.energy-ripples {display:none;}}
-@media(forced-colors:active) {.energy-core circle,.energy-core path {stroke:CanvasText;filter:none;}.energy-source {fill:Highlight;}.energy-bloom {display:none;}.neural-field {display:none;}}
+@media(forced-colors:active) {.energy-core circle,.energy-core path {stroke:CanvasText;filter:none;}.energy-heartbeat,.energy-aperture {filter:none;}.neural-field {display:none;}}
