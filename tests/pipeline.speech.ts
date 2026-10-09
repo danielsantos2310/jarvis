@@ -30,11 +30,13 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
   await controls.getByRole('button', { name: 'Check voice engines' }).click();
   await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','thinking');
   await expect(page.locator('.energy-core')).toHaveCSS('--energy-cyan','#b4a0ff');
-  await expect(page.locator('.energy-rotor')).toHaveCSS('animation-duration','5s');
+  const strand=page.locator('.energy-core defs path').first();
+  const thinkingShape=await strand.getAttribute('d');
+  await expect.poll(()=>strand.getAttribute('d')).not.toBe(thinkingShape);
   await page.screenshot({path:'artifacts/neural-processing.png'});
   releaseStatus();
   await expect(controls.getByRole('button', { name: 'Start voice capture' })).toBeEnabled();
-  await expect(page.locator('.energy-rotor')).toHaveCSS('animation-duration','48s');
+  await expect(page.locator('.energy-core')).toHaveCSS('--energy-cyan','#28d9f5');
   await controls.getByRole('button', { name: 'Start voice capture' }).click();
   await expect(controls.getByRole('button', { name: 'Finish and transcribe' })).toBeVisible();
   await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','listening');
