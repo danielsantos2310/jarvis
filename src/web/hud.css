@@ -128,11 +128,13 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 /* Living waveform: unfilled, interwoven strands; no mechanical housing. */
 .energy-core {--energy-cyan:#28d9f5;--energy-blue:#167cff;--energy-ice:#89efff;color:var(--energy-cyan);}
 [data-visual-state=listening] .energy-core {--energy-cyan:#65baff;--energy-ice:#b1f1ff;}
-[data-visual-state=thinking] .energy-core {--energy-cyan:#b4a0ff;--energy-ice:#d2e6ff;}
+[data-visual-state=thinking] .energy-core {--energy-cyan:#53bcff;--energy-ice:#b4eaff;}
 [data-visual-state=speaking] .energy-core {--energy-cyan:#87f4ff;--energy-ice:#d0fcff;}
 .living-core use {transition:stroke .7s;}
 .living-breath {animation:living-breathe 5s ease-in-out infinite;transform-origin:180px 180px;}
 .living-strands {filter:drop-shadow(0 0 1.1px var(--energy-cyan));}
+.living-heads {filter:drop-shadow(0 0 2px var(--energy-cyan));}
+.living-heads circle,.living-trails {transition:fill .7s,stroke .7s;}
 .living-core[data-focused=true] .living-haze {opacity:.48;}
 .living-haze {transition:opacity .6s;}
 /* The organic ring replaces rigid audio spokes; preserve the surrounding background waves. */
@@ -142,4 +144,4 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 .spatial-voice .reactor-preview:hover,.spatial-voice .reactor-preview[aria-pressed=true] {background:transparent;box-shadow:none;}
 @keyframes living-breathe {0%,100% {opacity:.8;transform:scale(.985);}50% {opacity:1;transform:scale(1.015);}}
 @media(prefers-reduced-motion:reduce) {.living-core * {animation:none!important;transition:none!important;}.living-breath {transform:none;}}
-@media(forced-colors:active) {.living-core use {stroke:CanvasText;filter:none;}.living-haze {display:none;}.living-strands {filter:none;}.neural-field {display:none;}}
+@media(forced-colors:active) {.living-core use,.living-trails {stroke:CanvasText;filter:none;}.living-heads circle {fill:CanvasText;}.living-haze {display:none;}.living-strands,.living-heads {filter:none;}.neural-field {display:none;}}

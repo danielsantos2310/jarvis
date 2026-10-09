@@ -29,7 +29,7 @@ test('bounded capture transcribes for review; actual PCM output drives waves and
   await page.route('**/api/voice/status',async route=>{await statusGate;await route.continue();});
   await controls.getByRole('button', { name: 'Check voice engines' }).click();
   await expect(page.locator('.voice-output')).toHaveAttribute('data-visual-state','thinking');
-  await expect(page.locator('.energy-core')).toHaveCSS('--energy-cyan','#b4a0ff');
+  await expect(page.locator('.energy-core')).toHaveCSS('--energy-cyan','#53bcff');
   const strand=page.locator('.energy-core defs path').first();
   const thinkingShape=await strand.getAttribute('d');
   await expect.poll(()=>strand.getAttribute('d')).not.toBe(thinkingShape);
