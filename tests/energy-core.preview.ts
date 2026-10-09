@@ -1,23 +1,26 @@
 import {test,expect} from '@playwright/test';
 import {openTool} from './spatial-helpers.ts';
+import {waveLoop} from '../src/web/energy-loop.ts';
 
 test('energy core works without WebGL and responds to selection, speech preview and motion preferences',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await page.emulateMedia({reducedMotion:'no-preference'});await page.goto('./');
-  const core=page.locator('.energy-core'),surface=page.locator('.voice-output'),rotor=core.locator('.energy-rotor');
+  const core=page.locator('.energy-core'),surface=page.locator('.voice-output'),strand=core.locator('defs path').first();
   await expect(core).toBeVisible();
-  await expect(core.locator('.energy-heartbeat')).toHaveCount(1);
-  expect(await core.locator('circle').evaluateAll(nodes=>nodes.filter(n=>Number(n.getAttribute('r'))>3).every(n=>getComputedStyle(n).fill==='none'))).toBe(true);
-  await expect(core).toHaveCSS('--energy-cyan','#45bdbb');await expect(core.locator('image,canvas,foreignObject')).toHaveCount(0);
-  const rotation=await rotor.evaluate(el=>getComputedStyle(el).transform);
-  await expect.poll(()=>rotor.evaluate(el=>getComputedStyle(el).transform)).not.toBe(rotation);
+  await expect(core.locator('.living-strands use')).toHaveCount(18);
+  await expect(core.locator('circle,image,canvas,foreignObject')).toHaveCount(0);
+  expect(await core.locator('use').evaluateAll(nodes=>nodes.every(n=>getComputedStyle(n).fill==='none'))).toBe(true);
+  await expect(core).toHaveCSS('--energy-cyan','#28d9f5');
+  const shape=await strand.getAttribute('d');
+  await expect.poll(()=>strand.getAttribute('d')).not.toBe(shape);
   await page.screenshot({path:'artifacts/energy-idle-desktop.png'});
   await openTool(page,'Weather');await expect(core).toHaveAttribute('data-focused','true');
-  await expect(core.locator('.energy-focus')).toHaveCSS('opacity','0.9');
+  await expect(core.locator('.living-haze')).toHaveCSS('opacity','0.48');
   await page.getByRole('button',{name:'Close panel',exact:true}).click();
   await expect(core).toHaveAttribute('data-focused','false');
   await page.getByRole('button',{name:'Preview waves',exact:true}).click();
   await expect(surface).toHaveAttribute('data-visual-state','speaking');
+  await expect(page.getByRole('button',{name:'Stop preview',exact:true})).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
   await expect(core).toHaveCSS('--energy-cyan','#87f4ff');
   await expect.poll(async()=>Number(await surface.evaluate(el=>getComputedStyle(el).getPropertyValue('--core-energy')))).toBeGreaterThan(.2);
   await page.screenshot({path:'artifacts/energy-speaking.png'});
@@ -25,16 +28,18 @@ test('energy core works without WebGL and responds to selection, speech preview 
   await expect(surface).toHaveAttribute('data-visual-state','idle');
   await expect(surface).toHaveCSS('--core-energy','0');
   await page.emulateMedia({reducedMotion:'reduce'});
-  await expect(rotor).toHaveCSS('animation-name','none');
-  await expect(core.locator('.energy-heartbeat')).toHaveCSS('animation-name','none');
+  await expect(core.locator('.living-breath')).toHaveCSS('animation-name','none');
+  await expect(strand).toHaveAttribute('d',waveLoop(0,0,0));
+  const still=await strand.getAttribute('d');await page.waitForTimeout(180);
+  expect(await strand.getAttribute('d')).toBe(still);
   await page.getByRole('button',{name:'Preview waves',exact:true}).click();
   await expect(surface).toHaveCSS('--core-energy','0');
   await page.getByRole('button',{name:'Stop preview',exact:true}).click();
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
-  await expect(rotor).toHaveCSS('animation-play-state','paused');
-  const frozen=await rotor.evaluate(el=>getComputedStyle(el).transform);await page.waitForTimeout(180);
-  expect(await rotor.evaluate(el=>getComputedStyle(el).transform)).toBe(frozen);
+  await expect(core.locator('.living-breath')).toHaveCSS('animation-play-state','paused');
+  const frozen=await strand.getAttribute('d');await page.waitForTimeout(180);
+  expect(await strand.getAttribute('d')).toBe(frozen);
   expect(errors).toEqual([]);
 });
 

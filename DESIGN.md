@@ -152,8 +152,16 @@ Idle uses a five-second breathing cycle and 48/70-second rotations. Listening ad
 
 The approved neural background, fourteen draggable touch widgets, 50% resting widget opacity and existing service panels remain intact. Reduced motion disables decorative motion and center scaling; hidden tabs pause it. Accessible status remains available. Tests run with WebGL disabled and cover desktop/mobile, touch, state transitions, real audio output, reduced motion and hidden-tab pause.
 
-## Current identity: open heartbeat reactor — 8 October 2026
+## Previous identity: open heartbeat reactor — 8 October 2026
 
 The solid sphere and dark chamber are superseded by a completely open SVG reactor. Only thin coils, arcs and small particles are painted; the neural background remains visible through the center. A single parent animation supplies two soft glow peaks every 3.2 seconds, keeping all reactor elements synchronized. Audio scales the inner coils by at most 4.5%, without filling the aperture.
 
 CoreDisplay retains ownership; hud.css maps --energy-cyan/ice/muted per real activity: idle teal (#45bdbb), listening blue (#65baff), pending work lavender (#b4a0ff), speaking ice cyan (#87f4ff). Color transitions take 700ms. Existing ring/ripple patterns and accessible status also distinguish activity; there are no visible state captions. The heartbeat does not restart on state changes. Reduced motion disables it and hidden tabs pause it. Background and all widget behavior remain unchanged.
+
+## Current identity: living wave loop — 9 October 2026
+
+The owner's cyan waveform reference supersedes mechanical coils, radial ticks, bearings and the double heartbeat. The center is now a large empty aperture surrounded by 18 translucent, irregular, intersecting light strands. Thin sharp filaments and a restrained blurred duplicate layer create depth without a filled disc or solid-looking object. No social-media marks from the reference are reproduced. The neural background and floating tools are unchanged.
+
+CoreDisplay owns a bounded 25fps SVG deformation loop; energy-loop.ts owns periodic geometry (161 points per strand, radius between 100 and 175 in a 360-square viewBox). Motion changes the contours themselves, not just their rotation. VoiceWaveform supplies its existing measured/illustrative audio envelope by ref; no extra analyser, audio capture or network dependency. Attack/release smoothing is 110/280ms. Pending work increases flow speed; speech increases waviness, while a five-second opacity/scale breath runs gently in all states. Selected-widget attention subtly bends nearby strands. Phase survives state changes, and effects/listeners are cleaned up on unmount.
+
+hud.css remains the token owner: cyan --energy-cyan #28d9f5, electric --energy-blue #167cff, ice --energy-ice #89efff. Listening shifts cyan to #65baff, processing to #b4a0ff and speaking to #87f4ff, with 700ms stroke transitions. Visible state words remain absent; accessible status and existing permission controls remain. Mechanical audio spokes are hidden and the horizontal speech waveform sits beneath the ring to preserve the aperture. Reduced motion freezes geometry and breathing; hidden tabs stop rendering and pause CSS. Existing system typography and panel tokens are unchanged.

@@ -125,35 +125,21 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 [data-visual-state=listening] .orbital-waves {opacity:.45!important;}
 [data-visual-state=speaking] .speech-wave,[data-visual-state=speaking] .reactive-rings {opacity:1;}
 
-/* Open reactor: a single heartbeat envelope keeps every coil in phase. */
-.energy-core {--energy-cyan:#45bdbb;--energy-ice:#b1efea;--energy-muted:#20636a;color:var(--energy-cyan);}
-[data-visual-state=listening] .energy-core {--energy-cyan:#65baff;--energy-ice:#c9e9ff;--energy-muted:#285d92;}
-[data-visual-state=thinking] .energy-core {--energy-cyan:#b4a0ff;--energy-ice:#e2d9ff;--energy-muted:#62518d;}
-[data-visual-state=speaking] .energy-core {--energy-cyan:#87f4ff;--energy-ice:#e0ffff;--energy-muted:#267786;}
-.energy-core path,.energy-core circle,.energy-core stop {transition:stroke .7s,fill .7s,stop-color .7s;}
-.energy-bearing,.energy-rotor,.energy-particles,.energy-response,.energy-focus,.energy-ripples circle {transform-origin:180px 180px;}
-.energy-heartbeat {animation:energy-heartbeat 3.2s ease-in-out infinite;}
-.energy-bearing {animation:orbital-spin 70s linear infinite;}
-.energy-rotor {animation:orbital-spin 48s linear infinite reverse;}
-.energy-particles {opacity:.45;transition:opacity .6s;}
-.energy-response {transform:scale(calc(1 + var(--core-energy,0)*.045));transition:transform 140ms ease-out;}
-.energy-aperture {filter:drop-shadow(0 0 3px currentColor);}
-.energy-focus {opacity:0;transition:transform .55s ease,opacity .35s;}
-.energy-core[data-focused=true] .energy-focus {opacity:.9;}
-.energy-ripples {opacity:0;transition:opacity .4s;}
-.energy-ripples circle {stroke-width:.8;}
-[data-visual-state=listening] .energy-ripples {opacity:.6;}
-[data-visual-state=listening] .energy-ripples circle {animation:energy-ripple 3.2s ease-out infinite;}
-[data-visual-state=listening] .energy-ripples circle:nth-child(2) {animation-delay:-1.6s;}
-[data-visual-state=thinking] .energy-rotor {animation-duration:5s;}
-[data-visual-state=thinking] .energy-bearing {animation-duration:12s;}
-[data-visual-state=thinking] .energy-particles {opacity:1;animation:orbital-spin 9s linear infinite;}
-@keyframes energy-heartbeat {
-  0%,42%,100% {opacity:.64;filter:drop-shadow(0 0 1px currentColor);}
-  12% {opacity:1;filter:drop-shadow(0 0 6px currentColor);}
-  23% {opacity:.76;filter:drop-shadow(0 0 2px currentColor);}
-  31% {opacity:.94;filter:drop-shadow(0 0 5px currentColor);}
-}
-@keyframes energy-ripple {from {transform:scale(1);opacity:.65;}to {transform:scale(1.9);opacity:0;}}
-@media(prefers-reduced-motion:reduce) {.energy-core * {animation:none!important;transition:none!important;}.energy-response {transform:none;}.energy-ripples {display:none;}}
-@media(forced-colors:active) {.energy-core circle,.energy-core path {stroke:CanvasText;filter:none;}.energy-heartbeat,.energy-aperture {filter:none;}.neural-field {display:none;}}
+/* Living waveform: unfilled, interwoven strands; no mechanical housing. */
+.energy-core {--energy-cyan:#28d9f5;--energy-blue:#167cff;--energy-ice:#89efff;color:var(--energy-cyan);}
+[data-visual-state=listening] .energy-core {--energy-cyan:#65baff;--energy-ice:#b1f1ff;}
+[data-visual-state=thinking] .energy-core {--energy-cyan:#b4a0ff;--energy-ice:#d2e6ff;}
+[data-visual-state=speaking] .energy-core {--energy-cyan:#87f4ff;--energy-ice:#d0fcff;}
+.living-core use {transition:stroke .7s;}
+.living-breath {animation:living-breathe 5s ease-in-out infinite;transform-origin:180px 180px;}
+.living-strands {filter:drop-shadow(0 0 1.1px var(--energy-cyan));}
+.living-core[data-focused=true] .living-haze {opacity:.48;}
+.living-haze {transition:opacity .6s;}
+/* The organic ring replaces rigid audio spokes; preserve the surrounding background waves. */
+.spatial-voice .reactor-art .living-core svg {filter:none;}
+.voice-output .reactive-rings {display:none;}
+.spatial-voice .speech-wave {top:91%;left:20%;width:60%;}
+.spatial-voice .reactor-preview:hover,.spatial-voice .reactor-preview[aria-pressed=true] {background:transparent;box-shadow:none;}
+@keyframes living-breathe {0%,100% {opacity:.8;transform:scale(.985);}50% {opacity:1;transform:scale(1.015);}}
+@media(prefers-reduced-motion:reduce) {.living-core * {animation:none!important;transition:none!important;}.living-breath {transform:none;}}
+@media(forced-colors:active) {.living-core use {stroke:CanvasText;filter:none;}.living-haze {display:none;}.living-strands {filter:none;}.neural-field {display:none;}}
