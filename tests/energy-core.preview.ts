@@ -8,7 +8,13 @@ test('energy core works without WebGL and responds to selection, speech preview 
   const core=page.locator('.energy-core'),surface=page.locator('.voice-output'),strand=core.locator('defs path').first();
   await expect(core).toBeVisible();
   await expect(core.locator('.living-strands use')).toHaveCount(18);
-  await expect(core.locator('circle,image,canvas,foreignObject')).toHaveCount(0);
+  await expect(core.locator('image,canvas,foreignObject')).toHaveCount(0);
+  await expect(core.locator('.living-head')).toHaveCount(12);
+  expect(await core.locator('circle').evaluateAll(nodes=>nodes.every(n=>Number(n.getAttribute('r'))<=3))).toBe(true);
+  const head=core.locator('.living-head').first();
+  const position=await head.getAttribute('transform');
+  await expect.poll(()=>head.getAttribute('transform')).not.toBe(position);
+  await expect.poll(async()=>Number(await core.getAttribute('data-orbit-speed'))).toBeLessThan(.025);
   expect(await core.locator('use').evaluateAll(nodes=>nodes.every(n=>getComputedStyle(n).fill==='none'))).toBe(true);
   await expect(core).toHaveCSS('--energy-cyan','#28d9f5');
   const shape=await strand.getAttribute('d');
@@ -22,6 +28,7 @@ test('energy core works without WebGL and responds to selection, speech preview 
   await expect(surface).toHaveAttribute('data-visual-state','speaking');
   await expect(page.getByRole('button',{name:'Stop preview',exact:true})).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
   await expect(core).toHaveCSS('--energy-cyan','#87f4ff');
+  await expect.poll(async()=>Number(await core.getAttribute('data-orbit-speed'))).toBeGreaterThan(.08);
   await expect.poll(async()=>Number(await surface.evaluate(el=>getComputedStyle(el).getPropertyValue('--core-energy')))).toBeGreaterThan(.2);
   await page.screenshot({path:'artifacts/energy-speaking.png'});
   await page.getByRole('button',{name:'Stop preview',exact:true}).click();
@@ -30,8 +37,11 @@ test('energy core works without WebGL and responds to selection, speech preview 
   await page.emulateMedia({reducedMotion:'reduce'});
   await expect(core.locator('.living-breath')).toHaveCSS('animation-name','none');
   await expect(strand).toHaveAttribute('d',waveLoop(0,0,0));
+  await expect(core).toHaveAttribute('data-orbit-speed','0');
+  const stillHead=await head.getAttribute('transform');
   const still=await strand.getAttribute('d');await page.waitForTimeout(180);
   expect(await strand.getAttribute('d')).toBe(still);
+  expect(await head.getAttribute('transform')).toBe(stillHead);
   await page.getByRole('button',{name:'Preview waves',exact:true}).click();
   await expect(surface).toHaveCSS('--core-energy','0');
   await page.getByRole('button',{name:'Stop preview',exact:true}).click();
@@ -40,6 +50,8 @@ test('energy core works without WebGL and responds to selection, speech preview 
   await expect(core.locator('.living-breath')).toHaveCSS('animation-play-state','paused');
   const frozen=await strand.getAttribute('d');await page.waitForTimeout(180);
   expect(await strand.getAttribute('d')).toBe(frozen);
+  const frozenHead=await head.getAttribute('transform');await page.waitForTimeout(180);
+  expect(await head.getAttribute('transform')).toBe(frozenHead);
   expect(errors).toEqual([]);
 });
 
