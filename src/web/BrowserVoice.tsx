@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { VoiceWaveform } from './VoiceWaveform.tsx';
+import { PreviewConversation } from './PreviewConversation.tsx';
 const key = (voice: SpeechSynthesisVoice) => `${voice.voiceURI}:${voice.lang}`;
-export function BrowserVoice({ controlsOpen, reply, embedded = false, onSpeaking, listening = false, inputLevel = 0, processing = false }: {controlsOpen:boolean;reply:string;embedded?:boolean;onSpeaking?:(value:boolean)=>void;listening?:boolean;inputLevel?:number;processing?:boolean}) {
+export function BrowserVoice({ controlsOpen, reply, embedded = false, publicPreview = false, onSpeaking, listening = false, inputLevel = 0, processing = false }: {controlsOpen:boolean;reply:string;embedded?:boolean;publicPreview?:boolean;onSpeaking?:(value:boolean)=>void;listening?:boolean;inputLevel?:number;processing?:boolean}) {
+  const [previewInput,setPreviewInput]=useState<{listening:boolean;level:number;requesting?:boolean}>({listening:false,level:0});
+  const inputBusy=previewInput.listening || !!previewInput.requesting;
   const [target,setTarget] = useState<HTMLElement | null>(null), [voices,setVoices] = useState<SpeechSynthesisVoice[]>([]), [selected,setSelected] = useState('');
   const [rate,setRate] = useState(1), [speaking,setSpeaking] = useState(false), [busy,setBusy] = useState(false), [note,setNote] = useState('Choose a device voice, then test it.');
   const queue = useRef<string[]>([]);
@@ -45,13 +48,13 @@ export function BrowserVoice({ controlsOpen, reply, embedded = false, onSpeaking
   }
   const controls = <section className="card browser-voice" aria-label={embedded ? "Read email aloud" : "Device voice test"}><h2>{embedded ? "Read email aloud" : "Test a device voice"}</h2><p>Use a local Windows or device voice now—no API key, Piper installation or microphone needed. Only voices the browser reports as local are listed.</p>
     {!supported ? <p role="status">Speech playback is unavailable in this browser. Try an up-to-date Edge or Chrome on Windows.</p> : <>
-      <label>Device voice<select value={selected} onChange={e=>setSelected(e.target.value)} disabled={busy || !voices.length}>{!voices.length && <option value="">No local voices available</option>}{voices.map(v=><option key={key(v)} value={key(v)}>{v.name} · {v.lang}</option>)}</select></label>
+      <label>Device voice<select value={selected} onChange={e=>setSelected(e.target.value)} disabled={busy || inputBusy || !voices.length}>{!voices.length && <option value="">No local voices available</option>}{voices.map(v=><option key={key(v)} value={key(v)}>{v.name} · {v.lang}</option>)}</select></label>
       <label>Voice speed<select value={rate} onChange={e=>setRate(Number(e.target.value))} disabled={busy}><option value={0.85}>Relaxed</option><option value={1}>Normal</option><option value={1.15}>Brisk</option></select></label>
-      <div className="speech-buttons">{!embedded && <button disabled={busy || !voices.length} onClick={()=>speak('Hello Daniel. Your JARVIS device voice test is ready. How can I help you today?')}>Test device voice</button>}<button disabled={busy || !voices.length || !reply.trim()} onClick={()=>speak(reply)}>{embedded ? "Read displayed email aloud" : "Read latest reply on device"}</button><button disabled={!busy} onClick={()=>stop()}>Stop device voice</button><button disabled={busy} onClick={refresh}>Refresh device voices</button></div>
+      <div className="speech-buttons">{!embedded && <button disabled={busy || inputBusy || !voices.length} onClick={()=>speak('Hello Daniel. Your JARVIS device voice test is ready. How can I help you today?')}>Test device voice</button>}<button disabled={busy || inputBusy || !voices.length || !reply.trim()} onClick={()=>speak(reply)}>{embedded ? "Read displayed email aloud" : "Read latest reply on device"}</button><button disabled={!busy} onClick={()=>stop()}>Stop device voice</button><button disabled={busy} onClick={refresh}>Refresh device voices</button></div>
       <p role="status">{note}</p>{!voices.length && <p>Install a Windows text-to-speech voice, restart your browser, then refresh this list. Browser voice availability can differ from Windows Narrator.</p>}
     </>}
     <p className="fineprint">{embedded && "Reads only the displayed preview or loaded full message, up to 20,000 characters, in short sections. Email text is spoken as content and never executed as commands. "}Waves animate with speech start/stop as an illustration; the browser does not give this test the audio samples. Piper will retain its actual audio-reactive waves. Closing this panel, hiding the tab, pausing or locking stops playback.</p>
     <a href="https://support.microsoft.com/en-gb/education/learning-accelerators/download-languages-and-voices-for-immersive-reader-read-mode-and-read-aloud" target="_blank" rel="noopener noreferrer">Install Windows speech voices</a>
   </section>;
-  return embedded ? controls : <><VoiceWaveform listening={listening} inputLevel={inputLevel} processing={processing} speaking={speaking} connected={voices.length>0} illustrative/>{target && createPortal(controls,target)}</>;
+  return embedded ? controls : <><VoiceWaveform listening={listening||previewInput.listening} inputLevel={Math.max(inputLevel,previewInput.level)} processing={processing} speaking={speaking} connected={voices.length>0} illustrative/>{target && createPortal(<>{controls}{publicPreview && controlsOpen && <PreviewConversation onSay={speak} onStopVoice={()=>stop()} busy={busy} onActivity={setPreviewInput}/>}</>,target)}</>;
 }

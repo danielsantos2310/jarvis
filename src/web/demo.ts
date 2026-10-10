@@ -44,7 +44,7 @@ export async function demoRequest(path: string, body?: unknown): Promise<unknown
   if(path==='actions')return action((body as {action:Action}).action);
   if(path==='commands'){
     const request=body as {text:string;timezone:string};
-    if(/^(hello|hi|status)[!.]?$/i.test(request.text.trim()))return {reply:'This is a browser-only preview with sample data. No local core, AI model, microphone or devices are connected.'};
+    if(/^(hello|hi|status)[!.]?$/i.test(request.text.trim()))return {reply:'This is a browser-only preview with sample data. No local core, AI model or home devices are connected. The microphone panel offers optional browser voice and clap tests.'};
     const parsed=parseCommand(request.text,now,request.timezone);return 'action' in parsed?action(parsed.action):parsed;
   }
   if(path==='control'){
