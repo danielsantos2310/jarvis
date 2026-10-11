@@ -87,3 +87,7 @@ At the owner's explicit request, bounded voice preparation proceeded before full
 The merged UI showed both microphone paths at once and retained obsolete voice labels. The readiness follow-up separates the paths and adds `npm run voice:check` plus `npm run start:voice`; see the [local setup guide](../development/local-voice.md). Protocol probes and synthetic browser tests are not physical-PC voice acceptance.
 
 The next owner-PC steps are to install/start local workers, pass the readiness check, test microphone and speakers, and record accuracy and latency. M1 still requires Windows/off-disk recovery evidence, resource/latency measurements, remaining accessibility/network checks and owner sign-off. No full milestone completion is claimed.
+
+## Installation preparation — 11 October 2026
+
+The owner expects the target PC to be available on 12 October evening. `npm run doctor` now provides non-mutating prerequisite diagnostics plus a brief loopback-port check, and the [installation-night checklist](../development/installation-night.md) sequences core, optional voice, Gmail and recovery. It never opens the workspace database or automatically clears locks. Operating system selection and all target-hardware acceptance remain pending; development-host checks do not certify the Alienware or close M1.
