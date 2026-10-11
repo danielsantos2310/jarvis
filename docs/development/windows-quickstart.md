@@ -1,6 +1,6 @@
 # Run the JARVIS local alpha on Windows / VS Code
 
-This is the M1 evaluation alpha (slices 1 and 2). Use synthetic tasks initially. It runs on the work PC; the Alienware server, Docker, Python and AI models are not needed yet.
+This is the M1 evaluation alpha. Use synthetic tasks initially. See the current [installation-night checklist](installation-night.md) for core, optional voice and recovery sequencing. Docker, Python and AI models are not needed for the basic core.
 
 ## 1. Get this branch
 
@@ -8,7 +8,7 @@ In your existing `jarvis` repository, open **Terminal → New Terminal** in VS C
 
 ```powershell
 git fetch origin
-git switch feat/m1-local-alpha
+git switch main
 ```
 
 If you do not use Git locally, download the ZIP from the implementation branch on GitHub, extract it, then use **File → Open Folder** to open the folder containing `package.json`. Keep the project and `.jarvis` state on your PC's local disk, outside network/shared/synchronized folders.
@@ -22,10 +22,11 @@ node --version
 npm --version
 npm ci
 npm run build
+npm run doctor
 npm start
 ```
 
-`npm ci` needs internet to obtain the locked dependencies. Once installed and built, the application's core flows do not need an internet connection. A printed SQLite experimental warning is from the selected Node API; it is not a missing Python installation. Keep security updates and package review current before a personal pilot.
+Use a reviewed current checkout; `doctor` is in `feat/installation-readiness` until that change is merged. Run each command separately and stop on errors. `npm ci` needs internet to obtain the locked dependencies. Once installed and built, the application's core flows do not need an internet connection. A printed SQLite experimental warning is from the selected Node API; it is not a missing Python installation. Keep security updates and package review current before a personal pilot.
 
 If PowerShell says `npm.ps1` cannot run because scripts are disabled, use `npm.cmd` in the commands above, or select **Command Prompt** as the terminal profile. No execution-policy weakening is necessary.
 

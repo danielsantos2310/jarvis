@@ -24,7 +24,7 @@ Open **http://127.0.0.1:3000** on the same PC. First-run enrollment uses the cod
 
 [Windows / VS Code setup and recovery](docs/development/windows-quickstart.md) · [M1 scope and remaining gates](docs/milestones/001-local-alpha.md) · [Validation evidence](docs/testing/m1-slice-1.md)
 
-This slice includes authenticated local tasks, one-shot and daily/weekly reminders, timers, a private inbox, permission controls and a synthetic presence simulator. Defined text commands work without an AI model. Voice, real sensors, cloud and external actions are not implemented. Manual and opt-in automatic encrypted backups, bounded retention and isolated restoration with deletion replay are available. Use synthetic examples until the personal-pilot gates are met.
+This slice includes authenticated local tasks, one-shot and daily/weekly reminders, timers, a private inbox, permission controls and a synthetic presence simulator. Defined text commands work without an AI model. Optional local Whisper/Piper voice and read-only Gmail are implemented behind explicit setup and permissions. A conversational AI mind, real sensors, owner recognition and external writes are not connected. Manual and opt-in automatic encrypted backups, bounded retention and isolated restoration with deletion replay are available. Use synthetic examples until the personal-pilot gates are met.
 
 See [recurring reminder setup and clock-change choices](docs/development/recurring-reminders.md) for the second M1 slice. See [encrypted backup and recovery](docs/development/backup-recovery.md) and [slice-3 validation](docs/testing/m1-slice-3.md) for the third slice.
 
@@ -32,7 +32,9 @@ See [automatic backup setup](docs/development/automatic-backups.md) to unlock da
 
 ## Validate your PC
 
-Both the local dashboard and public preview include an optional [30-second microphone test](docs/development/microphone-lab.md). It measures input level only after a click and browser permission; speech recognition, clap activation and real presence sensors are not connected yet. The public sample preview allows only this input-level test after explicit permission; it does not upload audio or provide speech recognition.
+Start with the [installation-night checklist](docs/development/installation-night.md). After `npm ci` and `npm run build`, run **`npm run doctor`** before starting the core. It checks required local prerequisites without opening your database, printing credentials or installing software. It briefly reserves/releases the loopback port and never clears locks automatically.
+
+Both the local dashboard and public preview include an optional [30-second microphone test](docs/development/microphone-lab.md). The meter processes input locally after a click and browser permission. The [public voice preview](docs/development/public-voice-preview.md) additionally offers a one-shot clap greeting and separately consented browser recognition with scripted replies; browser recognition may use provider processing. That preview is not the private Whisper/Piper path or an AI mind.
 
 After building, run `npm run validate:pc -- --recovery-dir "E:\JARVIS-Recovery"` with an existing local directory on your chosen drive. It uses temporary synthetic data and writes a results report without opening your real workspace. See the [Windows PC validation guide](docs/development/pc-validation.md).
 
