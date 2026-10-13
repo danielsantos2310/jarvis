@@ -8,7 +8,7 @@ test('Mira avatar responds to selection, speech preview and motion preferences',
   await expect(avatar.locator('.face')).toHaveAttribute('src',/mira-avatar/);
   await expect(avatar.locator('.avatar-lid')).toHaveCount(2);
   await expect(avatar.locator('.avatar-glint')).toHaveCount(2);
-  await expect(avatar.locator('.avatar-mouth')).toHaveCount(1);
+  await expect(avatar.locator('.avatar-mouth-trace')).toHaveCount(1);
   await expect(hud).toBeVisible();
   await expect(avatar).toHaveCSS('--avatar-cyan','#28d9f5');
   const idleFrame=await hud.evaluate(el=>(el as HTMLCanvasElement).toDataURL());
@@ -24,7 +24,7 @@ test('Mira avatar responds to selection, speech preview and motion preferences',
   await expect(page.getByRole('button',{name:'Stop preview',exact:true})).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
   await expect(avatar).toHaveCSS('--avatar-cyan','#87f4ff');
   await expect.poll(async()=>Number(await surface.evaluate(el=>getComputedStyle(el).getPropertyValue('--core-energy')))).toBeGreaterThan(.2);
-  await expect.poll(()=>avatar.locator('.avatar-mouth').evaluate(el=>Number.parseFloat(getComputedStyle(el).height))).toBeGreaterThan(4);
+  await expect.poll(()=>avatar.locator('.avatar-mouth-trace').evaluate(el=>Number.parseFloat(getComputedStyle(el).opacity))).toBeGreaterThan(.3);
   await page.screenshot({path:'artifacts/mira-speaking.png'});
   await page.getByRole('button',{name:'Stop preview',exact:true}).click();
   await expect(surface).toHaveAttribute('data-visual-state','idle');
