@@ -1,5 +1,10 @@
 # Changelog
 
+## Current local alpha documentation refresh — 2026-10-13
+
+- Confirmed that the published local-alpha version remains `0.4.0-alpha.4`.
+- Recorded the latest command-center visual and credential-publication safeguards; this documentation update makes no runtime, dependency, service-permission or public-API changes.
+
 ## Cyan control-room theme — 2026-09-30
 
 - Added a local SVG core display, dark grid, cyan technical panels and responsive control-room styling inspired by the owner's reference.
