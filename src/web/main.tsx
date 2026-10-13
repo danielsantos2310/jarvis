@@ -188,7 +188,12 @@ function App() {
       <p className="entry-note"><Icon kind="lock"/>One PC. One private workspace.<br/>Optional services connect only with your permission.</p>
     </div></main>
   </div>;
-  return <FloatingWorkspace active={activePanel} onOpen={setActivePanel} onControls={() => setControls(true)} onLock={() => void lock()}
+  return <FloatingWorkspace active={activePanel} onOpen={setActivePanel} onControls={() => setControls(true)} onLock={() => void lock()} systemStatus={{
+    local: online && Boolean(snapshot?.grant) && !snapshot?.paused,
+    storage: snapshot?.services.storage === 'ready',
+    voice: snapshot?.services.voice === 'configured',
+    cloud: snapshot?.services.cloud === 'on-request',
+  }}
     voice={emailSpeaking ? <VoiceWaveform speaking connected illustrative/> : !__JARVIS_DEMO__ && online && snapshot?.grant && !snapshot.paused && snapshot.services.voice === 'configured'
       ? <SpeechPanel controlsOpen={activePanel === 'microphone'} csrf={auth.csrf ?? ''} onTranscript={text => { setCommand(text); setActivePanel('command'); setTimeout(() => document.getElementById('command')?.focus(), 0); }} reply={messages.at(-1)?.text ?? ''}/>
       : online && snapshot?.grant && !snapshot.paused ? <BrowserVoice publicPreview={__JARVIS_DEMO__} listening={micActivity.listening} inputLevel={micActivity.level} processing={busy} controlsOpen={activePanel === 'microphone'} reply={messages.at(-1)?.text ?? ''}/> : <VoiceWaveform/>} notices={<>

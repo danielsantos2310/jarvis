@@ -11,6 +11,7 @@ const patterns = [
   /\bgh[pousr]_[A-Za-z0-9]{30,}\b/,
   /\bgithub_pat_[A-Za-z0-9_]{40,}\b/,
   /\bAIza[A-Za-z0-9_-]{35}\b/,
+  /\bGOCSPX-[A-Za-z0-9_-]{20,}\b/,
   /\bsk-(?:proj-)?[A-Za-z0-9_-]{40,}\b/,
   /\bAKIA[A-Z0-9]{16}\b/,
 ];

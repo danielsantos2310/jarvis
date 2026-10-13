@@ -70,6 +70,14 @@ web_modules/
 .env.*
 !.env.example
 
+# Provider credentials and private key material must remain outside Git.
+client_secret*.json
+credentials*.json
+*.pem
+*.key
+*.p12
+*.pfx
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
