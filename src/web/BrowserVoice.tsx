@@ -12,7 +12,7 @@ export function BrowserVoice({ controlsOpen, reply, embedded = false, publicPrev
   useEffect(()=>{onSpeaking?.(speaking);return ()=>onSpeaking?.(false);},[speaking,onSpeaking]);
   const utterance = useRef<SpeechSynthesisUtterance | null>(null), timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const supported = typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined';
-  function clear() { queue.current=[]; if(timer.current) clearTimeout(timer.current); timer.current=null; const current=utterance.current; utterance.current=null; if(current) {current.onstart=null;current.onend=null;current.onerror=null; speechSynthesis.cancel();} }
+  function clear() { queue.current=[]; if(timer.current) clearTimeout(timer.current); timer.current=null; const current=utterance.current; utterance.current=null; if(current) {current.onstart=null;current.onboundary=null;current.onend=null;current.onerror=null; speechSynthesis.cancel();} }
   function stop(message='Voice stopped.') {clear();setBusy(false);setSpeaking(false);setNote(message);}
   function refresh() {
     if(!supported) return;
@@ -41,7 +41,8 @@ export function BrowserVoice({ controlsOpen, reply, embedded = false, publicPrev
     setBusy(true);setNote('Starting device voice…');
     const finish=(message:string)=>{if(utterance.current!==next)return;stop(message);};
     next.onstart=()=>{if(utterance.current!==next)return;if(timer.current)clearTimeout(timer.current);setSpeaking(true);setNote('Speaking with your device voice.');timer.current=setTimeout(()=>finish('Voice stopped at the 45-second limit.'),45000);};
-    next.onend=()=>{if(utterance.current!==next)return;if(timer.current)clearTimeout(timer.current);next.onstart=null;next.onend=null;next.onerror=null;utterance.current=null;playNext();};next.onerror=()=>finish('The device could not play this voice. Try another voice or restart the browser.');
+    next.onboundary=()=>window.dispatchEvent(new Event('jarvis-speech-boundary'));
+    next.onend=()=>{if(utterance.current!==next)return;if(timer.current)clearTimeout(timer.current);next.onstart=null;next.onboundary=null;next.onend=null;next.onerror=null;utterance.current=null;playNext();};next.onerror=()=>finish('The device could not play this voice. Try another voice or restart the browser.');
     timer.current=setTimeout(()=>finish('The voice did not start. Try another installed voice.'),8000);
     try {speechSynthesis.speak(next);} catch {finish('Speech playback failed. Try another installed voice.');}
     }

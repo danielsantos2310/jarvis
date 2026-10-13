@@ -164,3 +164,26 @@ dialog{background:#0b1c28;color:var(--text);border-color:#4c8294;border-radius:8
 @media(max-width:980px){.command-header{inset:12px 138px auto 14px;gap:14px}.command-brand span,.command-online span{display:none}.command-brand strong{font-size:15px;letter-spacing:5px}.command-clock strong{font-size:18px}.system-readout{right:12px;top:75px;width:196px}.spatial-status{left:16px;top:77px}}
 @media(max-width:680px){.command-header{inset:10px 8px auto 10px;height:44px;grid-template-columns:1fr auto;gap:8px}.command-header:before,.command-header:after,.command-online{display:none}.command-brand .system-emblem{width:39px;height:39px}.command-brand strong{font-size:13px;letter-spacing:4px}.command-clock strong{font-size:15px}.command-clock span{display:none}.system-readout,.spatial-status{display:none}.spatial-voice:before,.spatial-voice:after,.core-conduit{display:none}.floating-tool[aria-pressed=true]:after{animation:none}.spatial-voice{top:49%}}
 @media(prefers-reduced-motion:reduce){.floating-tool[aria-pressed=true]:after{animation:none}}
+
+/* Mira portrait: the image stays below one canvas-owned HUD so face and rings share a capped square. */
+.spatial-voice .reactor-art{isolation:isolate;}
+.live-portrait{position:absolute;inset:0;width:100%;height:100%;}
+.avatar-face{--avatar-cyan:#28d9f5;--avatar-ice:#e6fbff;--avatar-lid-a:#03101a;--avatar-lid-b:#071b2b;}
+[data-visual-state=listening] .avatar-face{--avatar-cyan:#65baff;}
+[data-visual-state=thinking] .avatar-face{--avatar-cyan:#53bcff;}
+[data-visual-state=speaking] .avatar-face{--avatar-cyan:#87f4ff;}
+.avatar-face .face-wrap{position:absolute;z-index:0;left:50%;top:50%;width:min(62%,400px);aspect-ratio:1;transform:translate(-50%,-50%);will-change:transform,filter;}
+.avatar-face .face{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;mask-image:radial-gradient(circle at 50% 50%,#000 62%,transparent 72%);-webkit-mask-image:radial-gradient(circle at 50% 50%,#000 62%,transparent 72%);user-select:none;pointer-events:none;}
+.avatar-hud{position:absolute;z-index:1;inset:0;display:block;width:100%;height:100%;pointer-events:none;}
+.avatar-lid,.avatar-glint,.avatar-mouth{position:absolute;z-index:2;pointer-events:none;}
+.avatar-lid{width:11%;height:5.6%;border-radius:50%;background:radial-gradient(ellipse at 50% 95%,var(--avatar-lid-b),var(--avatar-lid-a) 69%);box-shadow:0 1px 4px #01060ab8;transform:translate(-50%,-50%) scaleY(var(--blink,0));transform-origin:center;}
+.avatar-lid-left{left:35.4%;top:52.5%;}.avatar-lid-right{left:63.9%;top:52.5%;}
+.avatar-glint{width:2.4%;aspect-ratio:1;border-radius:50%;background:var(--avatar-ice);box-shadow:0 0 6px #00c8ff,0 0 14px #00c8ff;transform:translate(-50%,-50%) translate(var(--gaze-x,0),var(--gaze-y,0));transition:opacity 45ms linear;}
+.avatar-glint-left{left:35.4%;top:52.5%;}.avatar-glint-right{left:63.9%;top:52.5%;}
+.avatar-mouth{left:50%;top:78.5%;width:17%;min-height:.6%;border:1px solid color-mix(in srgb,var(--avatar-cyan) 68%,transparent);border-radius:50%;background:radial-gradient(ellipse,#010610 0%,#06182a 70%,transparent 76%);box-shadow:0 0 5px color-mix(in srgb,var(--avatar-cyan) 58%,transparent),0 0 12px color-mix(in srgb,var(--avatar-cyan) 34%,transparent);transform:translate(-50%,-50%);transition:border-color .7s,box-shadow .7s;}
+.avatar-face[data-focused=true] .face-wrap{filter:drop-shadow(0 0 9px #28d9f538);}
+.spatial-voice .live-portrait + .reactive-rings{display:none;}
+.spatial-voice .speech-wave{z-index:3;}
+@media(max-width:680px){.avatar-face .face-wrap{width:min(64%,235px);}.avatar-mouth{border-width:1px;}}
+@media(prefers-reduced-motion:reduce){.avatar-face .face-wrap{transform:translate(-50%,-50%)!important;filter:brightness(1) saturate(1)!important;}.avatar-glint{transition:none;}.avatar-mouth{transition:none;}}
+@media(forced-colors:active){.avatar-face .face-wrap{display:none;}.avatar-hud{filter:contrast(1.4);}.avatar-lid,.avatar-glint,.avatar-mouth{display:none;}}

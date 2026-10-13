@@ -158,7 +158,7 @@ The solid sphere and dark chamber are superseded by a completely open SVG reacto
 
 CoreDisplay retains ownership; hud.css maps --energy-cyan/ice/muted per real activity: idle teal (#45bdbb), listening blue (#65baff), pending work lavender (#b4a0ff), speaking ice cyan (#87f4ff). Color transitions take 700ms. Existing ring/ripple patterns and accessible status also distinguish activity; there are no visible state captions. The heartbeat does not restart on state changes. Reduced motion disables it and hidden tabs pause it. Background and all widget behavior remain unchanged.
 
-## Current identity: living wave loop — 9 October 2026
+## Previous identity: living wave loop — 9 October 2026
 
 The owner's cyan waveform reference supersedes mechanical coils, radial ticks, bearings and the double heartbeat. The center is now a large empty aperture surrounded by 18 translucent, irregular, intersecting light strands. Thin sharp filaments and a restrained blurred duplicate layer create depth without a filled disc or solid-looking object. No social-media marks from the reference are reproduced. The neural background and floating tools are unchanged.
 
@@ -167,6 +167,14 @@ CoreDisplay owns a bounded 25fps SVG deformation loop; energy-loop.ts owns perio
 hud.css remains the token owner: cyan --energy-cyan #28d9f5, electric --energy-blue #167cff, ice --energy-ice #89efff. Listening shifts cyan to #65baff, processing to #53bcff and speaking to #87f4ff, with 700ms stroke transitions. The owner requested closely related colors, so processing now stays blue rather than violet. Visible state words remain absent; accessible status and existing permission controls remain. Mechanical audio spokes are hidden and the horizontal speech waveform sits beneath the ring to preserve the aperture. Reduced motion freezes geometry and breathing; hidden tabs stop rendering and pause CSS. Existing system typography and panel tokens are unchanged.
 
 Twelve small light heads now follow exact rendered strand paths, with stable pseudorandom starting positions, varied paces and mixed directions. Short cyan tails and 3-unit faint halos keep them subtle. Idle travel is approximately one lap per 46–69 seconds; speech accelerates toward one per 7–14 seconds depending on measured/illustrative energy and individual pace. Speed changes ease over 450ms, positions persist through state changes, and the existing 25fps loop owns all updates. Reduced motion renders still heads; hidden tabs freeze movement. No new timers, capture or network access.
+
+## Current identity: Mira avatar face — 13 October 2026
+
+The supplied cyan neural face supersedes the abstract core. `LivePortrait` places the portrait below a canvas-drawn HUD in one capped square so the face and rings remain aligned at desktop and touch widths. The canvas owns rings, calibration ticks, red accent arcs, motes, scan bands and speaking ripples; it is decorative and does not represent telemetry.
+
+The face layer is a 512px local WebP with a soft radial mask. Two dark lids blink together every 3.8 seconds, glints follow a bounded pointer/selected-widget target, and a light mouth response follows actual speech state. BrowserVoice emits a local boundary event when the browser supplies word boundaries; a bounded syllable motion remains when it does not. This is 2.5D illustration, not identity recognition, camera tracking or phoneme-accurate lip sync.
+
+`VoiceWaveform` remains the only owner of activity priority and audio energy. `LivePortrait` consumes that already-available state and never opens a microphone, starts speech, connects to a service or uses WebGL. It caps canvas resolution to 900px and 1.5 DPR, runs at most one frame per animation frame, freezes when the tab is hidden and draws a static neutral frame with reduced motion. State words remain visually hidden; accessible status stays available in the existing voice controls.
 
 ## Command-frame visual layer — 13 October 2026
 
