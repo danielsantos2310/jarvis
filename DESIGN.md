@@ -168,6 +168,14 @@ hud.css remains the token owner: cyan --energy-cyan #28d9f5, electric --energy-b
 
 Twelve small light heads now follow exact rendered strand paths, with stable pseudorandom starting positions, varied paces and mixed directions. Short cyan tails and 3-unit faint halos keep them subtle. Idle travel is approximately one lap per 46–69 seconds; speech accelerates toward one per 7–14 seconds depending on measured/illustrative energy and individual pace. Speed changes ease over 450ms, positions persist through state changes, and the existing 25fps loop owns all updates. Reduced motion renders still heads; hidden tabs freeze movement. No new timers, capture or network access.
 
+## Command-frame visual layer — 13 October 2026
+
+The living wave loop remains the signature, but it now sits in an original command-frame composition inspired by the owner’s supplied HUD description: an emblem and system name on the left, current local time in the header, a restrained availability readout on the right, cyan conduits crossing into the core, and small red calibration accents. This is a spatial instrument, not a navigation sidebar or a conventional web app.
+
+`FloatingWorkspace` owns the frame. Its header clock is device-local and the system panel is fed only by actual app values: local workspace availability, storage readiness, voice-worker configuration and whether cloud use is opt-in. It intentionally has no percentages or invented performance metrics. `--hud-red` is an accent for calibration markers only; cyan remains the action, focus and energy color. The existing icon-only draggable tools remain the only tool navigation, preserve their 50% resting opacity and keep their keyboard alternatives.
+
+The responsive contract preserves the mobile touch workspace: at 680px and below the extra technical readout and conduits step away, leaving a compact emblem, time, core and draggable 58px tools. Reduced motion disables the selected-tool halo animation as well as existing ambient motion. The visual language is original—no licensed names, logos or copied UI artwork.
+
 ## Public voice and clap preview — 10 October 2026
 
 The public microphone panel now composes PreviewConversation with the canonical BrowserVoice and MicrophoneTest owners. BrowserVoice remains the only speech-output owner and only uses browser-reported local voices. MicrophoneTest retains its existing 30-second local meter and adds an explicitly enabled, one-shot clap-like-transient greeting. It waits for quiet before detecting a short loud sound, releases capture before requesting speech, and never connects input to speakers. Sharp noises can false-trigger; this is not clap classification, owner recognition, an always-on wake word or a presence sensor.

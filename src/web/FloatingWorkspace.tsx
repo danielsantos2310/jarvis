@@ -27,6 +27,45 @@ const symbols: Record<string, ReactNode> = {
 export function HudIcon({ name }: { name: string }) {
   return <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle className="icon-orbit" cx="32" cy="32" r="29"/><circle className="icon-fine" cx="32" cy="32" r="31" strokeDasharray="1 2"/><circle className="icon-inner" cx="32" cy="32" r="21"/><circle className="icon-arc" cx="32" cy="32" r="24" strokeDasharray="65 12 35 39"/><circle className="icon-sectors" cx="32" cy="32" r="26.5" strokeDasharray="27 8 12 18 38 24 8 32"/><circle cx="32" cy="2" r="1" fill="currentColor"/><g transform="translate(19 19) scale(.81)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{symbols[name] ?? symbols.help}</g></svg>;
 }
+
+function SystemEmblem() {
+  return <svg className="system-emblem" viewBox="0 0 64 64" aria-hidden="true">
+    <circle cx="32" cy="32" r="28"/><circle cx="32" cy="32" r="21" strokeDasharray="2 3"/>
+    <path d="m32 13 17 30H15L32 13Z"/><path d="m32 21 9 17H23l9-17Z"/><circle cx="32" cy="32" r="3"/>
+  </svg>;
+}
+
+type SystemStatus = { local: boolean; storage: boolean; voice: boolean; cloud: boolean };
+
+function CommandHeader({ system }: { system: SystemStatus }) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const date = new Intl.DateTimeFormat('en-IE', { month: 'short', day: '2-digit', year: 'numeric' }).format(now).toUpperCase();
+  const weekday = new Intl.DateTimeFormat('en-IE', { weekday: 'long' }).format(now).toUpperCase();
+  const time = new Intl.DateTimeFormat('en-IE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(now);
+  const rows = [
+    ['LOCAL CORE', system.local ? 'AVAILABLE' : 'OFFLINE', system.local],
+    ['STORAGE', system.storage ? 'READY' : 'CHECKING', system.storage],
+    ['VOICE', system.voice ? 'CONFIGURED' : 'DEVICE TEST', system.voice],
+    ['CLOUD', system.cloud ? 'ON REQUEST' : 'DISABLED', system.cloud],
+  ] as const;
+  return <>
+    <header className="command-header">
+      <div className="command-brand"><SystemEmblem/><div><strong>JARVIS</strong><span>ARTIFICIAL INTELLIGENCE SYSTEM</span></div></div>
+      <div className="command-online" role="status"><span className={`command-online-dot ${system.local ? 'is-online' : ''}`}/><div><strong>{system.local ? 'ONLINE' : 'LOCAL ONLY'}</strong><span>{system.local ? 'SYSTEM LINK AVAILABLE' : 'AWAITING LOCAL CONNECTION'}</span></div></div>
+      <div className="command-clock"><span>{date}</span><strong>{time}</strong><span>{weekday}</span></div>
+    </header>
+    <aside className="system-readout" aria-label="System availability">
+      <div className="readout-title"><span/>SYSTEM STATUS</div>
+      {rows.map(([label, value, healthy]) => <div className="readout-row" key={label}>
+        <span className={`readout-mark ${healthy ? 'is-active' : ''}`}/><span>{label}</span><strong>{value}</strong><i aria-hidden="true"><b className={healthy ? 'is-active' : ''}/></i>
+      </div>)}
+    </aside>
+  </>;
+}
 const items: { id: Panel; label: string }[] = [
   { id: 'calendar', label: 'Calendar' }, { id: 'weather', label: 'Weather' }, { id: 'music', label: 'Music' }, { id: 'presence', label: 'Presence' }, { id: 'home', label: 'Home controls' }, { id: 'camera', label: 'Camera' },
   { id: 'command', label: 'Commands' }, { id: 'tasks', label: 'Tasks & reminders' }, { id: 'email', label: 'Email' }, { id: 'timers', label: 'Timers' },
@@ -37,9 +76,9 @@ function defaults(): Record<string, Point> {
   const narrow = innerWidth < 680;
   return Object.fromEntries(items.map((item, i) => [item.id, narrow ? { x: i % 2 ? 88 : 12, y: 15 + Math.floor(i / 2) * 12 } : { x: 50 + 42 * Math.cos((i / items.length) * Math.PI * 2 - Math.PI / 2), y: 50 + 36 * Math.sin((i / items.length) * Math.PI * 2 - Math.PI / 2) }]));
 }
-export function FloatingWorkspace({ active, onOpen, panels, voice, notices, onControls, onLock, children }: {
+export function FloatingWorkspace({ active, onOpen, panels, voice, notices, onControls, onLock, children, systemStatus }: {
   active: Panel | null; onOpen: (id: Panel | null) => void; panels: Record<Panel, ReactNode>; voice: ReactNode; notices: ReactNode;
-  onControls: () => void; onLock: () => void; children: ReactNode;
+  onControls: () => void; onLock: () => void; children: ReactNode; systemStatus: SystemStatus;
 }) {
   const [points, setPoints] = useState(defaults), [hidden, setHidden] = useState<string[]>([]), [moving, setMoving] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -75,6 +114,7 @@ export function FloatingWorkspace({ active, onOpen, panels, voice, notices, onCo
   return <div className="floating-workspace">
     <AmbientBackdrop/>
     <div className="hud-circuit" aria-hidden="true"/>
+    <CommandHeader system={systemStatus}/>
     <div className="spatial-status"><span className="dot"/><span>{__JARVIS_DEMO__ ? 'PREVIEW' : 'LOCAL'}</span></div>
     <div className="spatial-utilities">
       <button className="hud-utility" aria-label="Restore icons and reset layout" title="Restore icons and reset layout" onClick={() => { cancelTap(); setPoints(defaults()); setHidden([]); announce('All icons restored.'); }}><HudIcon name="restore"/></button>
@@ -82,7 +122,7 @@ export function FloatingWorkspace({ active, onOpen, panels, voice, notices, onCo
       <button className="hud-utility" aria-label={__JARVIS_DEMO__ ? 'Reset demo' : 'Lock workspace'} title={__JARVIS_DEMO__ ? 'Reset demo' : 'Lock workspace'} onClick={() => {cancelTap();onLock();}}><HudIcon name="lock"/></button>
     </div>
     <main id="main" className="spatial-stage" aria-label="JARVIS floating workspace">
-      <div className="spatial-voice"><AvatarAttention.Provider value={active ? points[active] : null}>{voice}</AvatarAttention.Provider></div>
+      <div className="spatial-voice"><span className="core-conduit core-conduit-left" aria-hidden="true"/><span className="core-conduit core-conduit-right" aria-hidden="true"/><AvatarAttention.Provider value={active ? points[active] : null}>{voice}</AvatarAttention.Provider></div>
       <nav aria-label="Floating tools">{items.filter(item => !hidden.includes(item.id)).map(item => <button key={item.id}
         className={`floating-tool ${moving === item.id ? 'is-moving' : ''}`} style={{ left: `${points[item.id].x}%`, top: `${points[item.id].y}%` }}
         aria-label={item.label} title={`${item.label} · drag to move; double-click or double-tap to hide; Delete also hides`} aria-describedby="move-instructions" aria-pressed={active === item.id}
