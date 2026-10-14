@@ -20,7 +20,7 @@ export function LivePortrait({ energy, state }: { energy: RefObject<number>; sta
   const rightLid = useRef<HTMLSpanElement>(null);
   const leftGlint = useRef<HTMLSpanElement>(null);
   const rightGlint = useRef<HTMLSpanElement>(null);
-  const mouth = useRef<HTMLSpanElement>(null);
+  const mouthTrace = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     const surface = root.current, hud = canvas.current;
@@ -30,7 +30,7 @@ export function LivePortrait({ energy, state }: { energy: RefObject<number>; sta
 
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
     const pointer = { x: 0, y: 0 };
-    let faceX = 0, faceY = 0, gazeX = 0, gazeY = 0, mouthOpen = 0, mouthPulse = 0;
+    let faceX = 0, faceY = 0, gazeX = 0, gazeY = 0, mouthLight = 0, mouthPulse = 0;
     let frame = 0, last = 0, width = 0, height = 0, dpr = 1;
 
     const resize = () => {
@@ -64,13 +64,14 @@ export function LivePortrait({ energy, state }: { energy: RefObject<number>; sta
       if (!isReduced) {
         faceX += (targetX * 14 - faceX) * .05; faceY += (targetY * 10 - faceY) * .05;
         gazeX += (targetX * 1.4 - gazeX) * .08; gazeY += (targetY * .6 - gazeY) * .08;
-        mouthPulse *= .86;
+        // A short, soft pulse gives speech a cue without changing the real lips.
+        mouthPulse *= Math.exp(-dt / 190);
       }
       const blinkPosition = isReduced ? 1 : (now % 3800) / 3800;
       const close = blinkPosition < 110 / 3800 ? Math.sin(blinkPosition / (110 / 3800) * Math.PI) : 0;
-      const syllable = speaking && !isReduced ? .3 + .3 * Math.abs(Math.sin(elapsed * 13)) : 0;
+      const syllable = speaking && !isReduced ? .24 + .42 * Math.abs(Math.sin(elapsed * 10.5)) : 0;
       const targetMouth = Math.max(mouthPulse, syllable);
-      mouthOpen += (targetMouth - mouthOpen) * .45;
+      mouthLight += (targetMouth - mouthLight) * (targetMouth > mouthLight ? .22 : .12);
       const scale = isReduced ? 1 : 1 + .008 * Math.sin(elapsed * 1.4) + value * .012 * Math.sin(elapsed * 6);
       const filter = state === 'thinking' ? 'saturate(1.3) hue-rotate(-8deg)' : state === 'speaking' ? 'brightness(1.22) saturate(1.2)' : state === 'listening' ? 'brightness(1.12) saturate(1.1)' : 'brightness(1) saturate(1)';
       face.current?.style.setProperty('transform', `translate(-50%, -50%) translate(${faceX.toFixed(2)}px, ${faceY.toFixed(2)}px) rotate(${(faceX * .06).toFixed(2)}deg) scale(${scale.toFixed(4)})`);
@@ -81,8 +82,8 @@ export function LivePortrait({ energy, state }: { energy: RefObject<number>; sta
         glint?.style.setProperty('--gaze-y', `${gazeY.toFixed(2)}%`);
         glint?.style.setProperty('opacity', String(1 - close));
       });
-      mouth.current?.style.setProperty('height', `${(.6 + mouthOpen * 6.5).toFixed(2)}%`);
-      mouth.current?.style.setProperty('opacity', `${(.6 + mouthOpen * .4).toFixed(2)}`);
+      mouthTrace.current?.style.setProperty('opacity', `${(.04 + mouthLight * .82).toFixed(3)}`);
+      mouthTrace.current?.toggleAttribute('data-speaking', speaking && !isReduced && mouthLight > .08);
 
       context.setTransform(dpr * width / 1000, 0, 0, dpr * height / 1000, 0, 0);
       context.clearRect(0, 0, 1000, 1000);
@@ -135,7 +136,13 @@ export function LivePortrait({ energy, state }: { energy: RefObject<number>; sta
       <img className="face" src={portrait} alt="" draggable="false"/>
       <span ref={leftLid} className="avatar-lid avatar-lid-left"/><span ref={rightLid} className="avatar-lid avatar-lid-right"/>
       <span ref={leftGlint} className="avatar-glint avatar-glint-left"/><span ref={rightGlint} className="avatar-glint avatar-glint-right"/>
-      <span ref={mouth} className="avatar-mouth"/>
+      <svg ref={mouthTrace} className="avatar-mouth-trace" viewBox="0 0 100 42" aria-hidden="true">
+        <path className="mouth-top" d="M4 24 Q24 10 50 21 Q76 10 96 24"/>
+        <path className="mouth-bottom" d="M7 26 Q50 39 93 26"/>
+        <circle className="mouth-node mouth-node-left" cx="24" cy="17" r="1.1"/>
+        <circle className="mouth-node mouth-node-center" cx="50" cy="21" r="1.35"/>
+        <circle className="mouth-node mouth-node-right" cx="76" cy="17" r="1.1"/>
+      </svg>
     </div>
     <canvas ref={canvas} className="avatar-hud"/>
   </div>;
